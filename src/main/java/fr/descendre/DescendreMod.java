@@ -6,6 +6,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
+import fr.descendre.extended.ServerLifecycle;
 
 @Mod(DescendreMod.MOD_ID)
 public class DescendreMod {
@@ -15,7 +16,8 @@ public class DescendreMod {
     public DescendreMod(IEventBus modEventBus) {
         LOGGER.info("Descendre NeoForge loading...");
 
-        NeoForge.EVENT_BUS.register(DescendreCommands.class);
+        NeoForge.EVENT_BUS.addListener(DescendreCommands::register);
+        NeoForge.EVENT_BUS.addListener(ServerLifecycle::onServerStopping);
 
         LOGGER.info("Descendre NeoForge loaded.");
     }

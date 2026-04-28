@@ -1,2 +1,12 @@
 /descendre start
 /descendre status
+/descendre start
+/descendre set 0 5000 0 minecraft:stone
+/descendre get 0 5000 0
+/descendre set 0 -5000 0 minecraft:diamond_block
+/tp 0 315 0
+/descendre get 0 -5000 0
+/descendre stats
+/save-all
+/descendre get 0 5000 0
+/descendre get 0 -5000 0
