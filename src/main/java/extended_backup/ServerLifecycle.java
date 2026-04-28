@@ -1,4 +1,4 @@
-package fr.descendre.extended;
+package extended_backup;
 
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 

@@ -1,194 +1,328 @@
 package fr.descendre.command;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import fr.descendre.extended.CubePos;
-import fr.descendre.extended.ExtendedBlockStore;
-import fr.descendre.extended.ExtendedY;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import fr.descendre.core.DescendreHeight;
+import fr.descendre.server.DescendreCubeManager;
+import fr.descendre.world.cube.CubeMap;
+import fr.descendre.world.cube.CubePos;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public final class DescendreCommands {
-    private DescendreCommands() {
+    private static final DynamicCommandExceptionType ERROR_BAD_Y =
+            new DynamicCommandExceptionType(y -> Component.literal(
+                    "Y hors range Descendre: " + y + ". Range interne: " + DescendreHeight.internalRangeText()
+            ));
+
+    private DescendreCommands() {}
+
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        register(event.getDispatcher(), event.getBuildContext());
     }
 
-    public static void register(RegisterCommandsEvent event) {
-        event.getDispatcher().register(
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
+        dispatcher.register(
                 Commands.literal("descendre")
+                        .then(Commands.literal("cubic")
 
-                        .then(Commands.literal("set")
-                                .then(Commands.argument("x", IntegerArgumentType.integer())
-                                        .then(Commands.argument("y", IntegerArgumentType.integer())
-                                                .then(Commands.argument("z", IntegerArgumentType.integer())
-                                                        .then(Commands.argument("block", BlockStateArgument.block(event.getBuildContext()))
-                                                                .executes(ctx -> setExtendedBlock(
-                                                                        ctx,
+                                .then(Commands.literal("info")
+                                        .executes(ctx -> info(ctx.getSource()))
+                                )
+
+                                .then(Commands.literal("clear")
+                                        .executes(ctx -> clear(ctx.getSource()))
+                                )
+
+                                .then(Commands.literal("tp")
+                               //         .executes(ctx -> tp(ctx.getSource(), 0, -15000, 0))
+                                        .then(Commands.argument("x", IntegerArgumentType.integer())
+                                                .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                        .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                                .executes(ctx -> tp(
+                                                                        ctx.getSource(),
                                                                         IntegerArgumentType.getInteger(ctx, "x"),
                                                                         IntegerArgumentType.getInteger(ctx, "y"),
-                                                                        IntegerArgumentType.getInteger(ctx, "z"),
-                                                                        BlockStateArgument.getBlock(ctx, "block")
+                                                                        IntegerArgumentType.getInteger(ctx, "z")
                                                                 ))
                                                         )
                                                 )
                                         )
                                 )
-                        )
 
-                        .then(Commands.literal("get")
-                                .then(Commands.argument("x", IntegerArgumentType.integer())
-                                        .then(Commands.argument("y", IntegerArgumentType.integer())
-                                                .then(Commands.argument("z", IntegerArgumentType.integer())
-                                                        .executes(ctx -> getExtendedBlock(
-                                                                ctx,
-                                                                IntegerArgumentType.getInteger(ctx, "x"),
-                                                                IntegerArgumentType.getInteger(ctx, "y"),
-                                                                IntegerArgumentType.getInteger(ctx, "z")
-                                                        ))
+                                .then(Commands.literal("get")
+                                        .then(Commands.argument("x", IntegerArgumentType.integer())
+                                                .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                        .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                                .executes(ctx -> get(
+                                                                        ctx.getSource(),
+                                                                        IntegerArgumentType.getInteger(ctx, "x"),
+                                                                        IntegerArgumentType.getInteger(ctx, "y"),
+                                                                        IntegerArgumentType.getInteger(ctx, "z")
+                                                                ))
+                                                        )
                                                 )
                                         )
                                 )
-                        )
 
-                        .then(Commands.literal("cube")
-                                .then(Commands.argument("x", IntegerArgumentType.integer())
-                                        .then(Commands.argument("y", IntegerArgumentType.integer())
-                                                .then(Commands.argument("z", IntegerArgumentType.integer())
-                                                        .executes(ctx -> getCube(
-                                                                ctx,
-                                                                IntegerArgumentType.getInteger(ctx, "x"),
-                                                                IntegerArgumentType.getInteger(ctx, "y"),
-                                                                IntegerArgumentType.getInteger(ctx, "z")
-                                                        ))
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("x", IntegerArgumentType.integer())
+                                                .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                        .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                                .then(Commands.argument("block", BlockStateArgument.block(buildContext))
+                                                                        .executes(ctx -> set(
+                                                                                ctx.getSource(),
+                                                                                IntegerArgumentType.getInteger(ctx, "x"),
+                                                                                IntegerArgumentType.getInteger(ctx, "y"),
+                                                                                IntegerArgumentType.getInteger(ctx, "z"),
+                                                                                BlockStateArgument.getBlock(ctx, "block").getState()
+                                                                        ))
+                                                                )
+                                                        )
                                                 )
                                         )
                                 )
-                        )
 
-                        .then(Commands.literal("stats")
-                                .executes(DescendreCommands::stats)
+                                .then(Commands.literal("platform")
+                                        .then(Commands.argument("centerX", IntegerArgumentType.integer())
+                                                .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                        .then(Commands.argument("centerZ", IntegerArgumentType.integer())
+                                                                .then(Commands.argument("radius", IntegerArgumentType.integer(0, 32))
+                                                                        .then(Commands.argument("block", BlockStateArgument.block(buildContext))
+                                                                                .executes(ctx -> platform(
+                                                                                        ctx.getSource(),
+                                                                                        IntegerArgumentType.getInteger(ctx, "centerX"),
+                                                                                        IntegerArgumentType.getInteger(ctx, "y"),
+                                                                                        IntegerArgumentType.getInteger(ctx, "centerZ"),
+                                                                                        IntegerArgumentType.getInteger(ctx, "radius"),
+                                                                                        BlockStateArgument.getBlock(ctx, "block").getState()
+                                                                                ))
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
                         )
         );
     }
 
-    private static int setExtendedBlock(CommandContext<CommandSourceStack> ctx, int x, int y, int z, BlockInput blockInput) {
-        CommandSourceStack source = ctx.getSource();
+    private static int info(CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+        CubeMap map = DescendreCubeManager.get(level);
+
+        source.sendSuccess(() -> Component.literal(
+                "Descendre cubic actif"
+                        + " | range cible: " + DescendreHeight.targetRangeText()
+                        + " | range interne: " + DescendreHeight.internalRangeText()
+                        + " | buildHeight réel Minecraft: " + level.getMinY() + " à " + level.getMaxY()
+                        + " | cubes RAM: " + map.loadedCubeCount()
+                        + " | blocs non-air: " + map.totalNonAirBlocks()
+        ), false);
+
+        return 1;
+    }
+
+    private static int clear(CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+        DescendreCubeManager.clear(level);
+
+        source.sendSuccess(() -> Component.literal("Descendre cubic RAM vidée pour cette dimension."), true);
+        return 1;
+    }
+
+    private static int tp(CommandSourceStack source, int x, int y, int z) throws CommandSyntaxException {
+        checkY(y);
+
+        ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = source.getLevel();
 
-        if (!ExtendedY.isAllowed(y)) {
+        if (level.isOutsideBuildHeight(y)) {
             source.sendFailure(Component.literal(
-                    "Y refusé. Plage Descendre autorisée : " + ExtendedY.MIN_Y + " à " + ExtendedY.MAX_Y
+                    "Impossible de créer une vraie plateforme à Y=" + y
+                            + " car Minecraft considère encore cette hauteur comme hors monde. "
+                            + "BuildHeight réel: " + level.getMinY() + " à " + level.getMaxY()
             ));
             return 0;
         }
 
-        BlockPos pos = new BlockPos(x, y, z);
-        BlockState state = blockInput.getState();
+        int realBlocks = createRealPlatform(level, x, y, z, 5, Blocks.STONE.defaultBlockState());
 
-        if (ExtendedY.isVanillaBuildHeight(level, y)) {
-            boolean success = level.setBlock(pos, state, 3);
-
-            String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
-
-            source.sendSuccess(() -> Component.literal(
-                    "Bloc vanilla placé en " + formatPos(pos) + " : " + blockId
-            ), true);
-
-            return success ? 1 : 0;
+        if (realBlocks <= 0) {
+            source.sendFailure(Component.literal("La plateforme réelle n'a pas pu être créée."));
+            return 0;
         }
 
-        ExtendedBlockStore store = ExtendedBlockStore.get(source.getServer());
+        player.teleportTo(
+                x + 0.5,
+                y + 2.0,
+                z + 0.5
+        );
 
-        if (state.isAir()) {
-            store.remove(level, pos);
-            store.saveIfDirty();
-
-            source.sendSuccess(() -> Component.literal(
-                    "Bloc extended supprimé en " + formatPos(pos)
-            ), true);
-
-            return 1;
-        }
-
-        String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
-
-        store.set(level, pos, blockId);
-        store.saveIfDirty();
+        final int finalRealBlocks = realBlocks;
 
         source.sendSuccess(() -> Component.literal(
-                "Bloc EXTENDED stocké en " + formatPos(pos) + " : " + blockId
-                        + " | cube=" + CubePos.fromBlockPos(pos).storageKey()
+                "Téléporté en " + x + " " + (y + 2) + " " + z
+                        + " | plateforme réelle créée à Y=" + y
+                        + " | blocs réels: " + finalRealBlocks
         ), true);
 
         return 1;
     }
 
-    private static int getExtendedBlock(CommandContext<CommandSourceStack> ctx, int x, int y, int z) {
-        CommandSourceStack source = ctx.getSource();
-        ServerLevel level = source.getLevel();
+    private static int get(CommandSourceStack source, int x, int y, int z) throws CommandSyntaxException {
+        checkY(y);
 
-        if (!ExtendedY.isAllowed(y)) {
-            source.sendFailure(Component.literal(
-                    "Y refusé. Plage Descendre autorisée : " + ExtendedY.MIN_Y + " à " + ExtendedY.MAX_Y
-            ));
+        ServerLevel level = source.getLevel();
+        CubeMap map = DescendreCubeManager.get(level);
+        BlockPos pos = new BlockPos(x, y, z);
+
+        BlockState state = map.getBlock(pos);
+        CubePos cubePos = CubePos.fromBlockPos(pos);
+
+        source.sendSuccess(() -> Component.literal(
+                "Bloc cubic en " + x + " " + y + " " + z
+                        + " : " + BuiltInRegistries.BLOCK.getKey(state.getBlock())
+                        + " | cube=" + cubePos
+                        + " | local="
+                        + CubePos.localX(x) + ","
+                        + CubePos.localY(y) + ","
+                        + CubePos.localZ(z)
+        ), false);
+
+        return 1;
+    }
+
+    private static int set(
+            CommandSourceStack source,
+            int x,
+            int y,
+            int z,
+            BlockState state
+    ) throws CommandSyntaxException {
+        checkY(y);
+
+        ServerLevel level = source.getLevel();
+        CubeMap map = DescendreCubeManager.get(level);
+
+        BlockPos pos = new BlockPos(x, y, z);
+        map.setBlock(pos, state);
+
+        boolean realPlaced = false;
+
+        if (!level.isOutsideBuildHeight(y)) {
+            level.setBlock(pos, state, 3);
+            realPlaced = true;
+        }
+
+        CubePos cubePos = CubePos.fromBlockPos(pos);
+        final boolean finalRealPlaced = realPlaced;
+
+        source.sendSuccess(() -> Component.literal(
+                "Bloc cubic stocké en " + x + " " + y + " " + z
+                        + " : " + BuiltInRegistries.BLOCK.getKey(state.getBlock())
+                        + " | cube=" + cubePos
+                        + " | local="
+                        + CubePos.localX(x) + ","
+                        + CubePos.localY(y) + ","
+                        + CubePos.localZ(z)
+                        + " | bloc réel Minecraft: " + (finalRealPlaced ? "oui" : "non")
+        ), true);
+
+        return 1;
+    }
+
+    private static int platform(
+            CommandSourceStack source,
+            int centerX,
+            int y,
+            int centerZ,
+            int radius,
+            BlockState state
+    ) throws CommandSyntaxException {
+        checkY(y);
+
+        ServerLevel level = source.getLevel();
+        CubeMap map = DescendreCubeManager.get(level);
+
+        int cubicCount = 0;
+        int realCount = 0;
+
+        boolean canPlaceRealBlocks = !level.isOutsideBuildHeight(y);
+
+        for (int x = centerX - radius; x <= centerX + radius; x++) {
+            for (int z = centerZ - radius; z <= centerZ + radius; z++) {
+                BlockPos pos = new BlockPos(x, y, z);
+
+                map.setBlock(pos, state);
+                cubicCount++;
+
+                if (canPlaceRealBlocks) {
+                    level.setBlock(pos, state, 3);
+                    realCount++;
+                }
+            }
+        }
+
+        final int finalCubicCount = cubicCount;
+        final int finalRealCount = realCount;
+        final boolean finalCanPlaceRealBlocks = canPlaceRealBlocks;
+
+        source.sendSuccess(() -> Component.literal(
+                "Plateforme cubic stockée: " + finalCubicCount
+                        + " blocs à Y=" + y
+                        + " avec " + BuiltInRegistries.BLOCK.getKey(state.getBlock())
+                        + " | plateforme réelle Minecraft: "
+                        + (finalCanPlaceRealBlocks ? finalRealCount + " blocs" : "non, Y hors buildHeight réel")
+        ), true);
+
+        return finalCubicCount;
+    }
+
+    private static void checkY(int y) throws CommandSyntaxException {
+        if (!DescendreHeight.isInsideInternalRange(y)) {
+            throw ERROR_BAD_Y.create(y);
+        }
+    }
+
+    private static int createRealPlatform(
+            ServerLevel level,
+            int centerX,
+            int y,
+            int centerZ,
+            int radius,
+            BlockState state
+    ) {
+        if (level.isOutsideBuildHeight(y)) {
+            System.out.println("[Descendre] Impossible de créer la plateforme réelle : Y=" + y
+                    + " hors limites. min=" + level.getMinY()
+                    + " max=" + level.getMaxY());
             return 0;
         }
 
-        BlockPos pos = new BlockPos(x, y, z);
+        int count = 0;
 
-        if (ExtendedY.isVanillaBuildHeight(level, y)) {
-            BlockState state = level.getBlockState(pos);
-            String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
-
-            source.sendSuccess(() -> Component.literal(
-                    "Bloc vanilla en " + formatPos(pos) + " : " + blockId
-            ), false);
-
-            return 1;
+        for (int x = centerX - radius; x <= centerX + radius; x++) {
+            for (int z = centerZ - radius; z <= centerZ + radius; z++) {
+                BlockPos pos = new BlockPos(x, y, z);
+                level.setBlock(pos, state, 3);
+                count++;
+            }
         }
 
-        ExtendedBlockStore store = ExtendedBlockStore.get(source.getServer());
-
-        String blockId = store.getBlockId(level, pos).orElse("minecraft:air");
-
-        source.sendSuccess(() -> Component.literal(
-                "Bloc EXTENDED en " + formatPos(pos) + " : " + blockId
-                        + " | cube=" + CubePos.fromBlockPos(pos).storageKey()
-        ), false);
-
-        return 1;
-    }
-
-    private static int getCube(CommandContext<CommandSourceStack> ctx, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
-        CubePos cubePos = CubePos.fromBlockPos(pos);
-
-        ctx.getSource().sendSuccess(() -> Component.literal(
-                "Block " + formatPos(pos) + " appartient au cube "
-                        + cubePos.x() + ", " + cubePos.y() + ", " + cubePos.z()
-        ), false);
-
-        return 1;
-    }
-
-    private static int stats(CommandContext<CommandSourceStack> ctx) {
-        ExtendedBlockStore store = ExtendedBlockStore.get(ctx.getSource().getServer());
-
-        ctx.getSource().sendSuccess(() -> Component.literal(
-                "Descendre extended store : " + store.size() + " blocs stockés"
-        ), false);
-
-        return 1;
-    }
-
-    private static String formatPos(BlockPos pos) {
-        return pos.getX() + " " + pos.getY() + " " + pos.getZ();
+        System.out.println("[Descendre] Plateforme réelle créée à Y=" + y + " | blocs=" + count);
+        return count;
     }
 }

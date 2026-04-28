@@ -4,8 +4,8 @@
     "type": "minecraft:flat",
     "settings": {
       "biome": "minecraft:the_void",
-      "lakes": false,
       "features": false,
+      "lakes": false,
       "layers": [],
       "structure_overrides": []
     }

@@ -1,4 +1,4 @@
-package fr.descendre.extended;
+package extended_backup;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
