@@ -103,6 +103,27 @@ public final class CubeMap {
         }
     }
 
+    /** Retourne le cube à cette position, ou null s'il n'est pas en RAM. */
+    public DescendreCube getCube(CubePos pos) {
+        return cubes.get(pos);
+    }
+
+    /** Place un cube en RAM (utilisé par le chargement disque). */
+    public void putCube(DescendreCube cube) {
+        if (!cube.isEmpty()) {
+            cubes.put(cube.pos(), cube);
+        }
+    }
+
+    /** Retire un cube de la RAM (sans le sauvegarder). */
+    public void removeCube(CubePos pos) {
+        cubes.remove(pos);
+    }
+
+    /** Itérable sur tous les cubes en RAM (pour la sauvegarde). */
+    public Iterable<DescendreCube> allCubes() {
+        return cubes.values();
+    }
 
 
 

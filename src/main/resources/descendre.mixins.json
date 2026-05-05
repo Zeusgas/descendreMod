@@ -2,9 +2,11 @@
   "required": true,
   "package": "fr.descendre.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "DimensionTypeHeightMixin",
+    "EntityVoidKillMixin"
+  ],
   "client": [],
-  "server": [],
   "injectors": {
     "defaultRequire": 1
   }

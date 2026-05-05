@@ -31,3 +31,19 @@
 /descendre cubic info
 /descendre cubic platform 0 -15000 0 5 minecraft:stone
 /descendre cubic get 0 -15000 0
+/descendre cubic clear
+/descendre cubic info
+/descendre cubic get 0 10000 0
+/descendre cubic get 0 5000 0
+/descendre cubic set 0 5000 0 minecraft:andesite
+/descendre cubic tp 0 5002 0
+/descendre cubic set 0 -15000 0 minecraft:andesite
+/descendre cubic tp 0 -14998 0
+/descendre cubic info
+/descendre cubic platform 0 -1000 0 5 stone
+/descendre cubic info
+/descendre cubic get 0 -1000 0
+/tp 0 0 0
+/tp 0 -1000 0
+/descendre cubic platform 0 -1000 0 10 minecraft:stone
+/tp 0 -1000 0
