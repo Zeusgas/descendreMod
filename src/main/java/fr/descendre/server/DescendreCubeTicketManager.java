@@ -68,4 +68,34 @@ public final class DescendreCubeTicketManager {
         }
         return result;
     }
+
+    /** Comme computeDesired, mais pour un seul joueur. */
+    public static Set<CubePos> computeDesiredForPlayer(ServerPlayer player) {
+        return computeForRadiusAroundPlayer(
+                player,
+                DescendreServerConfig.loadRadius(),
+                DescendreServerConfig.verticalRadius()
+        );
+    }
+
+    private static Set<CubePos> computeForRadiusAroundPlayer(ServerPlayer player, int radiusH, int radiusV) {
+        Set<CubePos> result = new HashSet<>();
+        int radiusH2 = radiusH * radiusH;
+
+        int playerCubeX = (int) Math.floor(player.getX()) >> 4;
+        int playerCubeY = (int) Math.floor(player.getY()) >> 4;
+        int playerCubeZ = (int) Math.floor(player.getZ()) >> 4;
+
+        for (int dx = -radiusH; dx <= radiusH; dx++) {
+            for (int dz = -radiusH; dz <= radiusH; dz++) {
+                if (dx * dx + dz * dz > radiusH2) continue;
+                for (int dy = -radiusV; dy <= radiusV; dy++) {
+                    result.add(new CubePos(playerCubeX + dx, playerCubeY + dy, playerCubeZ + dz));
+                }
+            }
+        }
+        return result;
+    }
+
+
 }

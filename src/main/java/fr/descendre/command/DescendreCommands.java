@@ -190,6 +190,11 @@ public final class DescendreCommands {
         BlockPos pos = new BlockPos(x, y, z);
 
         BlockState state = map.getBlock(pos);
+
+        System.out.println("[CMD get] pos=" + pos + " cube=" + CubePos.fromBlockPos(pos)
+                + " result=" + BuiltInRegistries.BLOCK.getKey(state.getBlock())
+                + " mapSize=" + map.loadedCubeCount());
+
         CubePos cubePos = CubePos.fromBlockPos(pos);
 
         source.sendSuccess(() -> Component.literal(
@@ -219,6 +224,9 @@ public final class DescendreCommands {
 
         BlockPos pos = new BlockPos(x, y, z);
         map.setBlock(pos, state);
+
+        System.out.println("[CMD set] pos=" + pos + " cube=" + CubePos.fromBlockPos(pos)
+                + " mapSize=" + map.loadedCubeCount());
 
         boolean realPlaced = false;
 
@@ -258,34 +266,20 @@ public final class DescendreCommands {
         CubeMap map = DescendreCubeManager.get(level);
 
         int cubicCount = 0;
-        int realCount = 0;
-
-        boolean canPlaceRealBlocks = !level.isOutsideBuildHeight(y);
 
         for (int x = centerX - radius; x <= centerX + radius; x++) {
             for (int z = centerZ - radius; z <= centerZ + radius; z++) {
                 BlockPos pos = new BlockPos(x, y, z);
-
                 map.setBlock(pos, state);
                 cubicCount++;
-
-                if (canPlaceRealBlocks) {
-                    level.setBlock(pos, state, 3);
-                    realCount++;
-                }
             }
         }
 
         final int finalCubicCount = cubicCount;
-        final int finalRealCount = realCount;
-        final boolean finalCanPlaceRealBlocks = canPlaceRealBlocks;
-
         source.sendSuccess(() -> Component.literal(
                 "Plateforme cubic stockée: " + finalCubicCount
                         + " blocs à Y=" + y
                         + " avec " + BuiltInRegistries.BLOCK.getKey(state.getBlock())
-                        + " | plateforme réelle Minecraft: "
-                        + (finalCanPlaceRealBlocks ? finalRealCount + " blocs" : "non, Y hors buildHeight réel")
         ), true);
 
         return finalCubicCount;

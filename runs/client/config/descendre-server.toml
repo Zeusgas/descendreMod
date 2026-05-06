@@ -1,0 +1,33 @@
+#Paramètres du système de tickets cubic Descendre.
+[ticket_system]
+	#Rayon horizontal de chargement autour du joueur, en cubes (1 cube = 16 blocs).
+	#Tous les cubes dans un cylindre de ce rayon seront chargés en RAM.
+	#Exemples : 8 = 128 blocs (léger), 16 = 256 blocs (confort), 32 = 512 blocs (lourd).
+	# Default: 16
+	# Range: 1 ~ 64
+	load_radius_cubes = 16
+	#Rayon au-delà duquel on décharge les cubes. Doit être >= load_radius_cubes.
+	#Avoir une marge évite les cycles load/unload quand le joueur fait du va-et-vient.
+	# Default: 20
+	# Range: 1 ~ 96
+	unload_radius_cubes = 20
+	#Rayon vertical de chargement, en cubes. Souvent plus grand que le rayon horizontal
+	#puisque Descendre étend la hauteur. 32 cubes = 512 blocs verticaux autour du joueur.
+	# Default: 32
+	# Range: 1 ~ 128
+	vertical_radius_cubes = 32
+	#Fréquence du ticker, en ticks Minecraft (20 ticks = 1 seconde).
+	#Plus c'est bas, plus c'est réactif aux mouvements du joueur, mais plus de CPU.
+	# Default: 20
+	# Range: 1 ~ 200
+	tick_interval = 20
+	#Limite de cubes chargés depuis le disque par appel du ticker.
+	#Évite les freezes quand le joueur tp loin et qu'il faudrait charger 1000 cubes d'un coup.
+	#Les cubes restants seront chargés au tick suivant.
+	# Default: 64
+	# Range: 1 ~ 4096
+	max_loads_per_tick = 64
+	#Limite de cubes déchargés (sauvegarde + retrait RAM) par appel du ticker.
+	# Default: 64
+	# Range: 1 ~ 4096
+	max_unloads_per_tick = 64

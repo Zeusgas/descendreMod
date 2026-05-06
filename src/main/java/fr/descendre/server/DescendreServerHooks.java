@@ -7,6 +7,8 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import fr.descendre.server.DescendreCubeTicker;
+import fr.descendre.server.DescendrePlayerTracker;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 /**
  * Branche le cycle de vie de la persistance Descendre aux events NeoForge.
@@ -24,6 +26,7 @@ public final class DescendreServerHooks {
         NeoForge.EVENT_BUS.addListener(DescendreServerHooks::onLevelSave);
         NeoForge.EVENT_BUS.addListener(DescendreServerHooks::onServerStopping);
         NeoForge.EVENT_BUS.addListener(DescendreServerHooks::onServerTick);
+        NeoForge.EVENT_BUS.addListener(DescendreServerHooks::onPlayerLogout);
     }
 
     private static void onLevelSave(LevelEvent.Save event) {
@@ -34,10 +37,15 @@ public final class DescendreServerHooks {
 
     private static void onServerStopping(ServerStoppingEvent event) {
         DescendreCubeManager.closeAll();
+        DescendrePlayerTracker.clearAll();
     }
 
     private static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
         DescendreCubeTicker.onServerTick(server.getAllLevels());
+    }
+
+    private static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        DescendrePlayerTracker.clearPlayer(event.getEntity().getUUID());
     }
 }

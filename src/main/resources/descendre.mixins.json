@@ -3,7 +3,6 @@
   "package": "fr.descendre.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "DimensionTypeHeightMixin",
     "EntityVoidKillMixin"
   ],
   "client": [],

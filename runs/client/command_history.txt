@@ -1,49 +1,50 @@
-/descendre start
-/descendre status
-/descendre start
-/descendre set 0 5000 0 minecraft:stone
-/descendre get 0 5000 0
-/descendre set 0 -5000 0 minecraft:diamond_block
-/tp 0 315 0
-/descendre get 0 -5000 0
-/descendre stats
-/save-all
-/descendre get 0 5000 0
-/descendre get 0 -5000 0
-/descendre cubic info
-/tp 0 5000 0
-/fill ~ ~ ~ ~ ~ ~ minecraft:acacia_planks
-/descendre cubic set 0 -15000 0 minecraft:diamond_block
-/descendre cubic get 0 -15000 0
-/descendre cubic platform 0 -15000 0 3 minecraft:stone
-/descendre cubic info
-/descendre cubic clear
-/descendre cubic platform 0 -15000 0 5 minecraft:stone
-/tp @s 0 -14998 0
-/tp @s 0 -14999 0
-/descendre cubic platform -15000 minecraft:stone/tp Dev 0 -14999 0
-/descendre cubic platform -15000 minecraft:stone
-/descendre cubic platform 0 -15000 0 20 minecraft:stone
-/tp Dev 0 -14999 0
-/descendre cubic clear
-/descendre cubic platform 0 -15000 0 20 minecraft:stone
-/gamemode survival
-/descendre cubic info
-/descendre cubic platform 0 -15000 0 5 minecraft:stone
-/descendre cubic get 0 -15000 0
-/descendre cubic clear
-/descendre cubic info
-/descendre cubic get 0 10000 0
-/descendre cubic get 0 5000 0
-/descendre cubic set 0 5000 0 minecraft:andesite
-/descendre cubic tp 0 5002 0
-/descendre cubic set 0 -15000 0 minecraft:andesite
-/descendre cubic tp 0 -14998 0
+/descendre cubic get 100 -100 100
+/tp 100 -100 100
 /descendre cubic info
 /descendre cubic platform 0 -1000 0 5 stone
 /descendre cubic info
+/tp @s 0 -995 0
+/descendre cubic info
+/descendre cubic get 0 -1000 0
+/descendre cubic info
+/descendre cubic platform 0 -1000 0 5 stone
+/descendre cubic info
+/tp @s 0 -995 0
+/descendre cubic info
+/descendre cubic get 0 -1000 0
+/descendre cubic info
+/descendre cubic get 0 -1000 0
+/tp 0 -995 0
+/time set day
+/descendre cubic info
+/descendre cubic platform 0 -1000 0 5 stone
+/descendre cubic info
+/tp @s 0 -995 0
+/descendre cubic info
+/descendre cubic get 0 -1000 0
+/descendre cubic info
+/descendre cubic get 0 -1000 0
+/execute in descendre:void run tp @s 0 100 0
+/descendre cubic info
+/descendre cubic platform 0 -1000 0 5 stone
+/tp @s 0 -995 0
+/descendre cubic set 0 -1000 0 stone
 /descendre cubic get 0 -1000 0
 /tp 0 0 0
-/tp 0 -1000 0
-/descendre cubic platform 0 -1000 0 10 minecraft:stone
-/tp 0 -1000 0
+/descendre cubic platform 0 100 0 5 stone
+/tp 0 100 0
+/execute in descendre:void run tp @s 0 100 0
+/gamemode creative
+/descendre cubic platform 0 100 0 5 stone
+/descendre cubic platform 100 100 100 3 stone
+/tp @s 200 100 200
+/tp 0 0 0
+/tp 0 100 0
+/gamemode creative
+/descendre cubic platform 0 100 0 5 stone
+/descendre cubic platform 100 100 100 3 stone
+/tp 200 100 200
+/tp 0 100 0
+/descendre cubic platform 0 100 0 5 stone
+/descendre cubic platform 100 100 100 3 stone
+/tp @s 200 100 200

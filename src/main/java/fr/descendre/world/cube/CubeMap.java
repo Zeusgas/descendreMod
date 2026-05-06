@@ -53,6 +53,10 @@ public final class CubeMap {
         if (cube.isEmpty()) {
             cubes.remove(cubePos);
         }
+
+        if (changeListener != null) {
+            changeListener.accept(pos.immutable(), state);
+        }
     }
 
     public boolean hasCube(CubePos pos) {
@@ -123,6 +127,13 @@ public final class CubeMap {
     /** Itérable sur tous les cubes en RAM (pour la sauvegarde). */
     public Iterable<DescendreCube> allCubes() {
         return cubes.values();
+    }
+
+    /** Callback appelé après chaque setBlock. Optionnel. */
+    private java.util.function.BiConsumer<BlockPos, BlockState> changeListener;
+
+    public void setChangeListener(java.util.function.BiConsumer<BlockPos, BlockState> listener) {
+        this.changeListener = listener;
     }
 
 

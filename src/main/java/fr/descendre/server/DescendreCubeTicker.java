@@ -6,6 +6,8 @@ import fr.descendre.world.cube.CubeMap;
 import fr.descendre.world.cube.CubePos;
 import fr.descendre.world.cube.DescendreCube;
 import net.minecraft.server.level.ServerLevel;
+import fr.descendre.server.DescendrePlayerTracker;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,32 +45,33 @@ public final class DescendreCubeTicker {
         CubeMap map = entry.map();
         CubeStorage storage = entry.storage();
 
-        System.out.println("[TICKER] dim=" + level.dimension().identifier()
-                + " players=" + level.players().size()
-                + " cubesRAM=" + map.allCubes().spliterator().getExactSizeIfKnown());
-
         // Pas de joueur connecté à cette dimension : rien à faire (on garde la RAM telle quelle)
         if (level.players().isEmpty()) return;
 
         Set<CubePos> desired   = DescendreCubeTicketManager.computeDesired(level);
         Set<CubePos> keepAlive = DescendreCubeTicketManager.computeKeepAlive(level);
 
-        // ---------- 1. Chargement ----------
+        // ---------- 1. Chargement RAM (depuis disque si nécessaire) ----------
         int loadBudget = DescendreServerConfig.maxLoadsPerTick();
         int loaded = 0;
 
         for (CubePos pos : desired) {
             if (loaded >= loadBudget) break;
-            if (map.getCube(pos) != null) continue; // déjà en RAM
+            if (map.getCube(pos) != null) continue;
             DescendreCube cube = storage.getCubeOrLoad(pos);
             if (cube != null) loaded++;
         }
 
-        // ---------- 2. Déchargement ----------
+        // ---------- 2. Synchronisation réseau pour chaque joueur ----------
+        for (ServerPlayer player : level.players()) {
+            Set<CubePos> playerDesired = DescendreCubeTicketManager.computeDesiredForPlayer(player);
+            DescendrePlayerTracker.sync(player, playerDesired, map::getCube);
+        }
+
+        // ---------- 3. Déchargement RAM ----------
         int unloadBudget = DescendreServerConfig.maxUnloadsPerTick();
         int unloaded = 0;
 
-        // On collecte d'abord la liste à décharger, puis on agit (évite ConcurrentModification)
         List<DescendreCube> toUnload = new ArrayList<>();
         for (DescendreCube cube : map.allCubes()) {
             if (unloaded + toUnload.size() >= unloadBudget) break;
@@ -78,16 +81,11 @@ public final class DescendreCubeTicker {
         }
 
         for (DescendreCube cube : toUnload) {
-            // Sauvegarde si nécessaire, puis retire de la RAM
             if (cube.isDirty()) {
                 storage.saveCube(cube);
             }
             map.removeCube(cube.pos());
             unloaded++;
-        }
-
-        if (loaded > 0 || unloaded > 0) {
-            System.out.println("[TICKER] loaded=" + loaded + " unloaded=" + unloaded);
         }
     }
 }

@@ -57,6 +57,7 @@ public final class Region3DFile implements Closeable {
 
     public Region3DFile(Path path) throws IOException {
         this.path = path;
+        System.out.println("[REGION] open " + path);
         java.nio.file.Files.createDirectories(path.getParent());
 
         this.channel = FileChannel.open(
