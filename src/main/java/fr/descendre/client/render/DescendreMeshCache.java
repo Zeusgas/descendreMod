@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class DescendreMeshCache {
 
+    private int buildsThisFrame = 0;
+    private int maxBuildsPerFrame = 4;
+
     private static final DescendreMeshCache INSTANCE = new DescendreMeshCache();
 
     public static DescendreMeshCache get() {
@@ -56,6 +59,14 @@ public final class DescendreMeshCache {
             dirty.remove(pos);
             return null;
         }
+
+        // Si on a déjà atteint le budget de build pour cette frame,
+// on garde l'ancien mesh s'il existe. Sinon on ne rend rien pour l'instant.
+        if (buildsThisFrame >= maxBuildsPerFrame) {
+            return mesh;
+        }
+
+        buildsThisFrame++;
 
         DescendreCubeMesh built = DescendreCubeMesh.build(cube, cubeCache);
         meshes.put(pos, built);
@@ -111,4 +122,10 @@ public final class DescendreMeshCache {
         meshes.clear();
         dirty.clear();
     }
+
+    public void beginFrame(int maxBuilds) {
+        this.buildsThisFrame = 0;
+        this.maxBuildsPerFrame = Math.max(1, maxBuilds);
+    }
+
 }

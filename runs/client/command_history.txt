@@ -1,9 +1,3 @@
-/descendre cubic info
-/tp @s 0 -995 0
-/descendre cubic info
-/descendre cubic get 0 -1000 0
-/descendre cubic info
-/descendre cubic get 0 -1000 0
 /execute in descendre:void run tp @s 0 100 0
 /descendre cubic info
 /descendre cubic platform 0 -1000 0 5 stone
@@ -48,3 +42,9 @@
 /descendre cubic platform 0 96 0 16 cobblestone
 /descendre cubic platform 0 105 0 32 cobblestone
 /descendre cubic platform 300 105 300 32 cobblestone
+/tp 0 0 0
+/tp 0 100 0
+/descendre cubic platform 0 100 0 32 minecraft:stone
+/descendre cubic platform 0 116 0 32 minecraft:dirt
+/descendre cubic platform 0 132 0 32 minecraft:dirt
+/descendre cubic platform 0 132 0 32 minecraft:glass

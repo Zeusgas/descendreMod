@@ -21,6 +21,8 @@ public final class DescendreRenderDispatcher {
         DescendreClientCubeCache cache = DescendreClientCubeCache.get();
         if (cache.size() == 0) return;
 
+        DescendreMeshCache.get().beginFrame(4);
+
         // Distance de rendu temporaire côté client.
         // 12 cubes = 192 blocs autour de la caméra.
         // Plus tard on mettra ça dans la config.
