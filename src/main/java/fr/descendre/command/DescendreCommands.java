@@ -20,6 +20,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import fr.descendre.storage.DescendreCubeDiskStorage;
+import java.io.IOException;
 
 public final class DescendreCommands {
     private static final DynamicCommandExceptionType ERROR_BAD_Y =
@@ -44,6 +46,14 @@ public final class DescendreCommands {
 
                                 .then(Commands.literal("clear")
                                         .executes(ctx -> clear(ctx.getSource()))
+                                )
+
+                                .then(Commands.literal("save")
+                                        .executes(ctx -> save(ctx.getSource()))
+                                )
+
+                                .then(Commands.literal("load")
+                                        .executes(ctx -> load(ctx.getSource()))
                                 )
 
                                 .then(Commands.literal("tp")
@@ -311,4 +321,49 @@ public final class DescendreCommands {
         System.out.println("[Descendre] Plateforme réelle créée à Y=" + y + " | blocs=" + count);
         return count;
     }
+
+    private static int save(CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+        CubeMap map = DescendreCubeManager.get(level);
+
+        try {
+            int count = DescendreCubeDiskStorage.save(level, map);
+
+            source.sendSuccess(() -> Component.literal(
+                    "Descendre cubic sauvegardé : " + count + " blocs."
+            ), true);
+
+            return count;
+        } catch (IOException e) {
+            source.sendFailure(Component.literal(
+                    "Erreur sauvegarde Descendre cubic : " + e.getMessage()
+            ));
+
+            return 0;
+        }
+    }
+
+    private static int load(CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+
+        try {
+            DescendreCubeManager.clear(level);
+
+            CubeMap map = DescendreCubeManager.get(level);
+            int count = DescendreCubeDiskStorage.load(level, map);
+
+            source.sendSuccess(() -> Component.literal(
+                    "Descendre cubic chargé : " + count + " blocs. Si le rendu ne se met pas à jour direct, quitte/reviens dans le monde."
+            ), true);
+
+            return count;
+        } catch (IOException e) {
+            source.sendFailure(Component.literal(
+                    "Erreur chargement Descendre cubic : " + e.getMessage()
+            ));
+
+            return 0;
+        }
+    }
+
 }

@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class DescendreClientCubeCache {
 
     private static final DescendreClientCubeCache INSTANCE = new DescendreClientCubeCache();
+    public static DescendreClientCubeCache getInstance() {
+        return INSTANCE;
+    }
 
     public static DescendreClientCubeCache get() {
         return INSTANCE;

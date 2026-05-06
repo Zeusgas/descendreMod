@@ -1,4 +1,4 @@
-package fr.descendre.mixin;
+package fr.descendre.mixin.height;
 
 import net.minecraft.world.level.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;

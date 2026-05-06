@@ -7,6 +7,7 @@ import fr.descendre.world.cube.DescendreCube;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.phys.Vec3;
+import fr.descendre.client.render.backend.DescendreRenderBackend;
 
 /**
  * Itère sur tous les cubes du cache client et délègue le rendu à DescendreCubeRenderer.
@@ -51,16 +52,13 @@ public final class DescendreRenderDispatcher {
                 continue;
             }
 
-            poseStack.pushPose();
-            poseStack.translate(
-                    worldOriginX - cameraPos.x,
-                    worldOriginY - cameraPos.y,
-                    worldOriginZ - cameraPos.z
-            );
+            DescendreCubeMesh mesh = DescendreCubeMesh.build(cube, DescendreClientCubeCache.getInstance());
 
-            DescendreCubeRenderer.renderCube(poseStack, bufferSource, cube);
+            if (mesh == null || mesh.isEmpty()) {
+                continue;
+            }
 
-            poseStack.popPose();
+            DescendreRenderBackend.renderer().render(mesh, poseStack, bufferSource, cameraPos);
         }
     }
 }
