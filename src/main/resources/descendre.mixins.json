@@ -5,7 +5,7 @@
   "mixins": [
     "height.DimensionTypeHeightMixin",
     "entity.EntityVoidKillMixin",
-    "collision.EntityCollisionMixin"
+    "collision.LevelBlockCollisionMixin"
   ],
   "injectors": {
     "defaultRequire": 1
