@@ -50,7 +50,7 @@ public final class DescendrePlayerTracker {
                 continue;
             }
             PacketDistributor.sendToPlayer(player, ClientboundCubeDataPacket.fromCube(cube));
-            System.out.println("[TRACKER] Sending cube " + pos + " to " + player.getName().getString());
+
             tracked.add(pos);
         }
 
@@ -63,7 +63,6 @@ public final class DescendrePlayerTracker {
         }
         for (CubePos pos : toForget) {
             PacketDistributor.sendToPlayer(player, ClientboundForgetCubePacket.of(pos));
-            System.out.println("[TRACKER] Forgetting cube " + pos + " for " + player.getName().getString());
             tracked.remove(pos);
         }
     }

@@ -54,9 +54,7 @@ public final class DescendreNetwork {
     private static void handleCubeData(ClientboundCubeDataPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             DescendreClientCubeCache.get().putFromPacket(packet);
-            System.out.println("[CLIENT] Received cube " + packet.cubePos()
-                    + " palette=" + packet.paletteIds().length
-                    + " cacheSize=" + DescendreClientCubeCache.get().size());
+
         });
     }
 
@@ -69,8 +67,6 @@ public final class DescendreNetwork {
     private static void handleForgetCube(ClientboundForgetCubePacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             DescendreClientCubeCache.get().forget(packet.cubePos());
-            System.out.println("[CLIENT] Forget cube " + packet.cubePos()
-                    + " cacheSize=" + DescendreClientCubeCache.get().size());
         });
     }
 

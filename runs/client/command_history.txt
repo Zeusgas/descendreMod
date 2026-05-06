@@ -1,6 +1,4 @@
 /descendre cubic info
-/descendre cubic platform 0 -1000 0 5 stone
-/descendre cubic info
 /tp @s 0 -995 0
 /descendre cubic info
 /descendre cubic get 0 -1000 0
@@ -48,3 +46,5 @@
 /descendre cubic set 0 107 0 minecraft:diamond_block
 /fill ~ ~ ~ ~ ~ ~ minecraft:acacia_planks
 /descendre cubic platform 0 96 0 16 cobblestone
+/descendre cubic platform 0 105 0 32 cobblestone
+/descendre cubic platform 300 105 300 32 cobblestone
