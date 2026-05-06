@@ -1,16 +1,4 @@
 /descendre cubic info
-/descendre cubic get 0 -1000 0
-/descendre cubic info
-/descendre cubic platform 0 -1000 0 5 stone
-/descendre cubic info
-/tp @s 0 -995 0
-/descendre cubic info
-/descendre cubic get 0 -1000 0
-/descendre cubic info
-/descendre cubic get 0 -1000 0
-/tp 0 -995 0
-/time set day
-/descendre cubic info
 /descendre cubic platform 0 -1000 0 5 stone
 /descendre cubic info
 /tp @s 0 -995 0
@@ -48,3 +36,15 @@
 /descendre cubic set 0 105 0 minecraft:diamond_block
 /descendre cubic clear
 /descendre cubic set 0 107 0 minecraft:diamond_block
+/descendre cubic platform 0 90 0 16 stone
+/descendre cubic platform 0 90 0 8 cobblestone
+/descendre cubic platform 0 95 0 5 glass
+/execute in descendre:void 0.
+/execute in descendre:void run tp @s 0 100 0
+/descendre cubic platform 0 100 0 16 stone
+/descendre cubic platform 0 90 0 16 cobblestone
+/descendre cubic platform 0 90 0 30 minecraft:red_mushroom_block
+/descendre cubic platform 0 95 0 16 cobblestone
+/descendre cubic set 0 107 0 minecraft:diamond_block
+/fill ~ ~ ~ ~ ~ ~ minecraft:acacia_planks
+/descendre cubic platform 0 96 0 16 cobblestone

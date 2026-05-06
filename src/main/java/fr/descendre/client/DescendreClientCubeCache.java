@@ -54,6 +54,8 @@ public final class DescendreClientCubeCache {
         }
 
         cubes.put(pos, cube);
+        // Le cube vient d'être (ré)inséré : invalider son mesh
+        fr.descendre.client.render.DescendreMeshCache.get().invalidate(pos);
     }
 
     /** Reçu par le handler de ClientboundCubeBlockUpdatePacket. */
@@ -70,11 +72,23 @@ public final class DescendreClientCubeCache {
                 CubePos.localZ(pos.getZ()),
                 state
         );
+        // Invalidation ciblée : ce cube + voisins sur les bords concernés
+        fr.descendre.client.render.DescendreMeshCache.get().invalidateBlock(pos);
     }
 
     /** Reçu par le handler de ClientboundForgetCubePacket. */
     public void forget(CubePos pos) {
         cubes.remove(pos);
+        fr.descendre.client.render.DescendreMeshCache.get().forget(pos);
+        // Les voisins doivent recalculer leur culling : leurs faces vers ce cube sont peut-être à nouveau visibles
+        for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+            CubePos neighbor = new CubePos(
+                    pos.x() + dir.getStepX(),
+                    pos.y() + dir.getStepY(),
+                    pos.z() + dir.getStepZ()
+            );
+            fr.descendre.client.render.DescendreMeshCache.get().invalidate(neighbor);
+        }
     }
 
     /** Lecture pour le rendu (J3+). Retourne AIR si le cube n'est pas connu. */
@@ -104,5 +118,6 @@ public final class DescendreClientCubeCache {
     /** Vide le cache. À appeler à la déconnexion du serveur. */
     public void clear() {
         cubes.clear();
+        fr.descendre.client.render.DescendreMeshCache.get().clear();
     }
 }

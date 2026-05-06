@@ -1,72 +1,55 @@
 package fr.descendre.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import fr.descendre.world.cube.CubePos;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import fr.descendre.client.DescendreClientCubeCache;
 import fr.descendre.world.cube.DescendreCube;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Dessine un DescendreCube en utilisant le BlockRenderDispatcher de Minecraft.
+ * Émet les quads d'un cube à partir de son mesh pré-calculé.
  *
- * Approche MVP J3 : on rend chaque bloc non-air via renderSingleBlock,
- * sans culling ni mesher. Lent mais simple. On optimisera en J5 (vrai mesher).
+ * Plus aucun cull, plus aucun model lookup, plus aucune allocation par frame.
+ * Tout le travail a déjà été fait par DescendreCubeMesh.build().
  */
 public final class DescendreCubeRenderer {
 
+    private static final int FULL_LIGHT = 0x00F000F0; // sky 15, block 15
+
     private DescendreCubeRenderer() {}
 
-    /**
-     * Rend un cube complet à sa position monde.
-     *
-     * @param poseStack pile de transformation (déjà translatée à camera-relative)
-     * @param bufferSource où écrire les vertices
-     * @param cube le cube à rendre
-     */
     public static void renderCube(PoseStack poseStack, MultiBufferSource bufferSource, DescendreCube cube) {
         if (cube.isEmpty()) return;
 
-        BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
-        CubePos cubePos = cube.pos();
+        DescendreClientCubeCache cubeCache = DescendreClientCubeCache.get();
+        DescendreCubeMesh mesh = DescendreMeshCache.get().getOrBuild(cube.pos(), cubeCache);
+        if (mesh == null || mesh.isEmpty()) return;
 
-        // Coordonnées monde du coin (0,0,0) du cube
-        int worldOriginX = cubePos.x() << 4;
-        int worldOriginY = cubePos.y() << 4;
-        int worldOriginZ = cubePos.z() << 4;
+        PoseStack.Pose pose = poseStack.last();
 
-        // Pour chaque bloc local du cube
-        for (int ly = 0; ly < 16; ly++) {
-            for (int lz = 0; lz < 16; lz++) {
-                for (int lx = 0; lx < 16; lx++) {
-                    BlockState state = cube.getLocal(lx, ly, lz);
-                    if (state == null || state.isAir()) continue;
+        for (Map.Entry<RenderType, List<DescendreCubeMesh.QuadEntry>> entry : mesh.quadsByType().entrySet()) {
+            RenderType renderType = entry.getKey();
+            List<DescendreCubeMesh.QuadEntry> quads = entry.getValue();
+            if (quads.isEmpty()) continue;
 
-                    int worldX = worldOriginX + lx;
-                    int worldY = worldOriginY + ly;
-                    int worldZ = worldOriginZ + lz;
-                    BlockPos worldPos = new BlockPos(worldX, worldY, worldZ);
+            VertexConsumer consumer = bufferSource.getBuffer(renderType);
 
-                    poseStack.pushPose();
-                    poseStack.translate(lx, ly, lz);
-
-                    // Lumière forcée maximum (J3 = pas de propagation lumière)
-                    int packedLight = 0x00F000F0; // sky 15, block 15
-                    int packedOverlay = net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
-
-                    dispatcher.renderSingleBlock(
-                            state,
-                            poseStack,
-                            bufferSource,
-                            packedLight,
-                            packedOverlay
-                    );
-
-                    poseStack.popPose();
-                }
+            for (DescendreCubeMesh.QuadEntry q : quads) {
+                poseStack.pushPose();
+                poseStack.translate(q.lx(), q.ly(), q.lz());
+                emitQuad(consumer, poseStack.last(), q.quad());
+                poseStack.popPose();
             }
         }
+    }
+
+    private static void emitQuad(VertexConsumer consumer, PoseStack.Pose pose, BakedQuad quad) {
+        consumer.putBulkData(pose, quad, 1.0F, 1.0F, 1.0F, 1.0F, FULL_LIGHT, OverlayTexture.NO_OVERLAY);
     }
 }
