@@ -10,7 +10,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 import fr.descendre.network.DescendreNetwork;
-
+import fr.descendre.client.DescendreClientEvents;
 @Mod(DescendreMod.MODID)
 public final class DescendreMod {
     public static final String MODID = "descendre";
@@ -20,5 +20,7 @@ public final class DescendreMod {
         DescendreServerHooks.register(modEventBus);
         DescendreNetwork.register(modEventBus);
         container.registerConfig(ModConfig.Type.SERVER, DescendreServerConfig.SPEC);
+        DescendreClientEvents.register(modEventBus);
+
     }
 }

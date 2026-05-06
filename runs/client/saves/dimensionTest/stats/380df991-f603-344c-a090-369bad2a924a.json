@@ -1,12 +1,23 @@
 {
   "stats": {
+    "minecraft:used": {
+      "minecraft:stripped_birch_wood": 9
+    },
+    "minecraft:dropped": {
+      "minecraft:stripped_birch_wood": 1
+    },
     "minecraft:custom": {
-      "minecraft:time_since_rest": 10681,
-      "minecraft:total_world_time": 14894,
-      "minecraft:leave_game": 5,
-      "minecraft:sneak_time": 27,
-      "minecraft:play_time": 10681,
-      "minecraft:time_since_death": 10681
+      "minecraft:time_since_rest": 15686,
+      "minecraft:walk_one_cm": 1222,
+      "minecraft:total_world_time": 27465,
+      "minecraft:leave_game": 8,
+      "minecraft:fly_one_cm": 10097,
+      "minecraft:crouch_one_cm": 188,
+      "minecraft:sneak_time": 256,
+      "minecraft:play_time": 15686,
+      "minecraft:jump": 3,
+      "minecraft:time_since_death": 15686,
+      "minecraft:drop": 1
     }
   },
   "DataVersion": 4671

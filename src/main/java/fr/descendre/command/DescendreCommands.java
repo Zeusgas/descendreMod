@@ -228,15 +228,8 @@ public final class DescendreCommands {
         System.out.println("[CMD set] pos=" + pos + " cube=" + CubePos.fromBlockPos(pos)
                 + " mapSize=" + map.loadedCubeCount());
 
-        boolean realPlaced = false;
-
-        if (!level.isOutsideBuildHeight(y)) {
-            level.setBlock(pos, state, 3);
-            realPlaced = true;
-        }
 
         CubePos cubePos = CubePos.fromBlockPos(pos);
-        final boolean finalRealPlaced = realPlaced;
 
         source.sendSuccess(() -> Component.literal(
                 "Bloc cubic stocké en " + x + " " + y + " " + z
@@ -246,7 +239,6 @@ public final class DescendreCommands {
                         + CubePos.localX(x) + ","
                         + CubePos.localY(y) + ","
                         + CubePos.localZ(z)
-                        + " | bloc réel Minecraft: " + (finalRealPlaced ? "oui" : "non")
         ), true);
 
         return 1;
