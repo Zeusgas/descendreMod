@@ -65,9 +65,10 @@ public abstract class LevelSetBlockMixin {
         }
 
         if (level instanceof ClientLevel) {
-            // Côté client : prédiction. On ne fait rien ici — le serveur enverra le block update
-            // via ClientboundCubeBlockUpdatePacket et le cache client se mettra à jour.
-            // On annule juste l'écriture vanilla pour éviter qu'elle pollue le ClientLevel.
+            // Côté client : applique localement dans le cache cubic.
+            // Permet à vanilla (BlockItem.useOn) de "voir" le bloc juste posé pour décrémenter
+            // la stack, jouer le son, etc. Le serveur enverra ensuite la version officielle.
+            fr.descendre.client.DescendreClientCubeCache.get().updateBlock(pos.immutable(), newState);
             cir.setReturnValue(true);
             return;
         }

@@ -64,28 +64,53 @@ public final class DescendreNetwork {
             net.minecraft.server.level.ServerLevel level = player.level();
             net.minecraft.core.BlockPos pos = packet.pos();
 
-            // Validation 1 : range Descendre
+            // Validation 1 : pas en spectateur
+            if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SPECTATOR) return;
+
+            // Validation 2 : range Descendre
             if (!fr.descendre.core.DescendreHeight.isInsideInternalRange(pos.getY())) return;
 
-            // Validation 2 : portée du joueur (~6 blocs en créatif)
+            // Validation 3 : portée du joueur
             double maxReach = player.blockInteractionRange() + 1.0;
             double dx = pos.getX() + 0.5 - player.getX();
             double dy = pos.getY() + 0.5 - player.getY();
             double dz = pos.getZ() + 0.5 - player.getZ();
-            if (dx * dx + dy * dy + dz * dz > maxReach * maxReach) {
-                System.out.println("[ACTION] reject (too far) pos=" + pos);
-                return;
-            }
+            if (dx * dx + dy * dy + dz * dz > maxReach * maxReach) return;
 
             fr.descendre.world.cube.CubeMap map = fr.descendre.server.DescendreCubeManager.get(level);
 
             if (packet.isPlace()) {
-                // Vérifie que la position est libre
+                // Validation 4 : aventure - vérifier CanPlaceOn (le client a déjà vérifié, mais double-check serveur)
+                if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.ADVENTURE) {
+                    // En aventure côté serveur, la vérification stricte demanderait de connaître l'item
+                    // que le joueur tient et le bloc visé exact. Pour simplifier, on bloque tout placement
+                    // en aventure côté cubic. Si le client a triché, le packet est rejeté.
+                    return;
+                }
+
                 net.minecraft.world.level.block.state.BlockState existing = map.getBlock(pos);
                 if (existing != null && !existing.isAir()) return;
+
                 map.setBlock(pos, packet.resolveState());
+
+                // Décrémenter la stack en survie (créatif = pas de décompte)
+                if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SURVIVAL) {
+                    net.minecraft.world.item.ItemStack stack = player.getMainHandItem();
+                    if (stack.getItem() instanceof net.minecraft.world.item.BlockItem) {
+                        stack.shrink(1);
+                    }
+                }
             } else {
+                // Cassage : enlève le bloc
+                net.minecraft.world.level.block.state.BlockState existing = map.getBlock(pos);
+                if (existing == null || existing.isAir()) return;
+
                 map.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+
+                // Drop l'item en survie (pas en créatif)
+                if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SURVIVAL) {
+                    net.minecraft.world.level.block.Block.dropResources(existing, level, pos, null, player, player.getMainHandItem());
+                }
             }
         });
     }
