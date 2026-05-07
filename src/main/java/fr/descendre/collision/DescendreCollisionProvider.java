@@ -85,4 +85,19 @@ public final class DescendreCollisionProvider {
         }
         return null;
     }
+
+    /**
+     * Lookup unique d'un bloc cubic, utilisé par le mixin getBlockState.
+     * Retourne null si pas de stockage Descendre actif sur ce niveau ou si le bloc est air.
+     */
+    public static BlockState lookupBlock(Level level, BlockPos pos) {
+        if (!DescendreHeight.isInsideInternalRange(pos.getY())) return null;
+
+        BiFunction<Level, BlockPos, BlockState> lookup = blockLookupFor(level);
+        if (lookup == null) return null;
+
+        BlockState state = lookup.apply(level, pos);
+        return state == null || state.isAir() ? null : state;
+    }
+
 }

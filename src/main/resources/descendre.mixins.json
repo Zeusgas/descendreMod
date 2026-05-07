@@ -3,9 +3,10 @@
   "package": "fr.descendre.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "height.DimensionTypeHeightMixin",
     "entity.EntityVoidKillMixin",
-    "collision.LevelBlockCollisionMixin"
+    "collision.LevelBlockCollisionMixin",
+    "collision.LevelGetBlockStateMixin",
+    "collision.LevelSetBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

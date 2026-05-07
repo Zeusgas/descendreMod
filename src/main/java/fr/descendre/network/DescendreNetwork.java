@@ -61,6 +61,7 @@ public final class DescendreNetwork {
     private static void handleCubeBlockUpdate(ClientboundCubeBlockUpdatePacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             DescendreClientCubeCache.get().updateBlock(packet.pos(), packet.resolveState());
+            System.out.println("[CLIENT-UPDATE] pos=" + packet.pos() + " state=" + packet.resolveState());
         });
     }
 

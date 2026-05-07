@@ -159,12 +159,8 @@ public final class DescendreCommands {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = source.getLevel();
 
-        if (level.isOutsideBuildHeight(y)) {
-            source.sendFailure(Component.literal(
-                    "Impossible de créer une vraie plateforme à Y=" + y
-                            + " car Minecraft considère encore cette hauteur comme hors monde. "
-                            + "BuildHeight réel: " + level.getMinY() + " à " + level.getMaxY()
-            ));
+        if (!DescendreHeight.isInsideInternalRange(y)) {
+            source.sendFailure(Component.literal("Y=" + y + " hors range Descendre: " + DescendreHeight.internalRangeText()));
             return 0;
         }
 
@@ -301,7 +297,7 @@ public final class DescendreCommands {
             int radius,
             BlockState state
     ) {
-        if (level.isOutsideBuildHeight(y)) {
+        if (DescendreHeight.isInsideInternalRange(y)) {
             System.out.println("[Descendre] Impossible de créer la plateforme réelle : Y=" + y
                     + " hors limites. min=" + level.getMinY()
                     + " max=" + level.getMaxY());

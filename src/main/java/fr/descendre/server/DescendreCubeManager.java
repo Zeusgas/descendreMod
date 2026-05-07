@@ -39,14 +39,17 @@ public final class DescendreCubeManager {
             // Quand un bloc change, on envoie une update aux joueurs qui voient ce changement
             map.setChangeListener((pos, state) -> {
                 fr.descendre.world.cube.CubePos cp = fr.descendre.world.cube.CubePos.fromBlockPos(pos);
+                int sentTo = 0;
                 for (net.minecraft.server.level.ServerPlayer player : level.players()) {
                     if (fr.descendre.server.DescendrePlayerTracker.isTracking(player, cp)) {
                         net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(
                                 player,
                                 fr.descendre.network.ClientboundCubeBlockUpdatePacket.of(pos, state)
                         );
+                        sentTo++;
                     }
                 }
+                System.out.println("[CHANGE] pos=" + pos + " state=" + state + " sentTo=" + sentTo + " players=" + level.players().size());
             });
 
             return new Entry(map, storage);
