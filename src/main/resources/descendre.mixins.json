@@ -6,7 +6,8 @@
     "entity.EntityVoidKillMixin",
     "collision.LevelBlockCollisionMixin",
     "collision.LevelGetBlockStateMixin",
-    "collision.LevelSetBlockMixin"
+    "collision.LevelSetBlockMixin",
+    "collision.MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
