@@ -36,22 +36,26 @@ public abstract class LevelSetBlockMixin {
             int flags,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        Level level = (Level) (Object) this;
-
-        // Log TOUS les setBlock pour Y < -1000 (sans filtre)
-        if (pos.getY() < -1000) {
-            System.out.println("[SETBLOCK-RAW] side=" + (level.isClientSide() ? "CLIENT" : "SERVER")
-                    + " pos=" + pos + " state=" + newState
-                    + " thread=" + Thread.currentThread().getName()
-                    + " stackTop=" + new Throwable().getStackTrace()[1]);
+        // Vérifie d'abord si on est dans un contexte cubic
+        fr.descendre.world.DescendreCubeLevel.Context ctx = fr.descendre.world.DescendreCubeLevel.current();
+        if (ctx != null) {
+            if (!fr.descendre.core.DescendreHeight.isInsideInternalRange(pos.getY())) {
+                cir.setReturnValue(false);
+                return;
+            }
+            fr.descendre.world.DescendreCubeLevel.setBlock(pos, newState);
+            cir.setReturnValue(true);
+            return;
         }
+
+        // Code normal
+        Level level = (Level) (Object) this;
 
         boolean outOfVanillaRange = pos.getY() < level.getMinY() || pos.getY() > level.getMaxY();
         boolean cubicBlockExists = !outOfVanillaRange
                 && DescendreCollisionProvider.lookupBlock(level, pos) != null;
 
-        if (!outOfVanillaRange && !cubicBlockExists) return; // laisse vanilla faire son boulot
-
+        if (!outOfVanillaRange && !cubicBlockExists) return;
         if (!DescendreHeight.isInsideInternalRange(pos.getY())) {
             cir.setReturnValue(false);
             return;

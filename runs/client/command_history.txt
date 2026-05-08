@@ -1,6 +1,3 @@
-/tp 0 -15000 0
-/execute in descendre:void run tp 0 0 0
-/tp 0 100 0
 /descendre cubic platform 0 -15000 0 5 minecraft:ice
 /descendre cubic save
 /descendre cubic load
@@ -48,3 +45,6 @@
 /descendre cubic platform 0 -11000 0 3 stone
 /descendre cubic platform 0 -10999 0 3 cobblestone
 /execute in descendre:void run tp 0 -11000 0
+/descendre cubic clear
+/descendre cubic info
+/descendre cubic platform 0 -10999 0 3 cobblestone

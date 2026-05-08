@@ -62,57 +62,78 @@ public final class DescendreNetwork {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof net.minecraft.server.level.ServerPlayer player)) return;
             net.minecraft.server.level.ServerLevel level = player.level();
-            net.minecraft.core.BlockPos pos = packet.pos();
+            net.minecraft.core.BlockPos targetPos = new net.minecraft.core.BlockPos(
+                    packet.targetX(), packet.targetY(), packet.targetZ()
+            );
 
-            // Validation 1 : pas en spectateur
+            // Validation : spectateur, range, portée
             if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SPECTATOR) return;
-
-            // Validation 2 : range Descendre
-            if (!fr.descendre.core.DescendreHeight.isInsideInternalRange(pos.getY())) return;
-
-            // Validation 3 : portée du joueur
+            if (!fr.descendre.core.DescendreHeight.isInsideInternalRange(targetPos.getY())) return;
             double maxReach = player.blockInteractionRange() + 1.0;
-            double dx = pos.getX() + 0.5 - player.getX();
-            double dy = pos.getY() + 0.5 - player.getY();
-            double dz = pos.getZ() + 0.5 - player.getZ();
+            double dx = targetPos.getX() + 0.5 - player.getX();
+            double dy = targetPos.getY() + 0.5 - player.getY();
+            double dz = targetPos.getZ() + 0.5 - player.getZ();
             if (dx * dx + dy * dy + dz * dz > maxReach * maxReach) return;
 
             fr.descendre.world.cube.CubeMap map = fr.descendre.server.DescendreCubeManager.get(level);
 
-            if (packet.isPlace()) {
-                // Validation 4 : aventure - vérifier CanPlaceOn (le client a déjà vérifié, mais double-check serveur)
-                if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.ADVENTURE) {
-                    // En aventure côté serveur, la vérification stricte demanderait de connaître l'item
-                    // que le joueur tient et le bloc visé exact. Pour simplifier, on bloque tout placement
-                    // en aventure côté cubic. Si le client a triché, le packet est rejeté.
-                    return;
-                }
-
-                net.minecraft.world.level.block.state.BlockState existing = map.getBlock(pos);
-                if (existing != null && !existing.isAir()) return;
-
-                map.setBlock(pos, packet.resolveState());
-
-                // Décrémenter la stack en survie (créatif = pas de décompte)
+            if (!packet.isPlace()) {
+                // CASSAGE
+                net.minecraft.world.level.block.state.BlockState existing = map.getBlock(targetPos);
+                if (existing == null || existing.isAir()) return;
+                map.setBlock(targetPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
                 if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SURVIVAL) {
-                    net.minecraft.world.item.ItemStack stack = player.getMainHandItem();
-                    if (stack.getItem() instanceof net.minecraft.world.item.BlockItem) {
-                        stack.shrink(1);
-                    }
+                    net.minecraft.world.level.block.Block.dropResources(existing, level, targetPos, null, player, player.getMainHandItem());
                 }
             } else {
-                // Cassage : enlève le bloc
-                net.minecraft.world.level.block.state.BlockState existing = map.getBlock(pos);
-                if (existing == null || existing.isAir()) return;
+                // === PLACEMENT / INTERACTION ===
+                if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.ADVENTURE) return;
 
-                map.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                net.minecraft.world.phys.BlockHitResult hitResult = packet.toHitResult();
+                net.minecraft.world.item.ItemStack stack = player.getItemInHand(packet.hand());
 
-                // Drop l'item en survie (pas en créatif)
-                if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SURVIVAL) {
-                    net.minecraft.world.level.block.Block.dropResources(existing, level, pos, null, player, player.getMainHandItem());
-                }
+                // Exécute l'opération dans un contexte cubic :
+                // Tous les getBlockState/setBlock appels par Block.use() seront redirigés vers CubeMap
+                fr.descendre.world.DescendreCubeLevel.runWithContext(level, map, () -> {
+                    // 1. D'abord, interaction avec le bloc visé (porte, coffre, levier...)
+                    net.minecraft.world.level.block.state.BlockState targetState = map.getBlock(targetPos);
+                    if (targetState != null && !targetState.isAir() && !player.isShiftKeyDown()) {
+                        // Appelle l'interaction avec item d'abord (ouvrir GUI, etc.)
+                        net.minecraft.world.InteractionResult useResult = targetState.useItemOn(
+                                stack, level, player, packet.hand(), hitResult
+                        );
+                        if (useResult.consumesAction()) return;
+
+                        // Sinon, interaction sans item
+                        net.minecraft.world.InteractionResult plainResult = targetState.useWithoutItem(level, player, hitResult);
+                        if (plainResult.consumesAction()) return;
+
+                        // Si pas d'interaction, essayer avec l'item en main
+                        if (!(stack.getItem() instanceof net.minecraft.world.item.BlockItem)) {
+                            return; // Pas d'item en main, interaction finie
+                        }
+                    }
+
+                    // 2. Sinon, placement normal
+                    if (!(stack.getItem() instanceof net.minecraft.world.item.BlockItem blockItem)) return;
+
+                    net.minecraft.world.item.context.UseOnContext useOnContext =
+                            new net.minecraft.world.item.context.UseOnContext(level, player, packet.hand(), stack, hitResult);
+                    blockItem.useOn(useOnContext);
+                });
             }
         });
+    }
+
+    /** Helper : retourne le BlockState à une position (cubic d'abord, vanilla ensuite). */
+    private static net.minecraft.world.level.block.state.BlockState getNeighborState(
+            fr.descendre.world.cube.CubeMap map,
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.core.BlockPos pos
+    ) {
+        net.minecraft.world.level.block.state.BlockState cubic = map.getBlock(pos);
+        if (cubic != null && !cubic.isAir()) return cubic;
+        return level.getBlockState(pos);
     }
 
     // ---------- Handlers (exécutés sur le client) ----------

@@ -59,10 +59,13 @@ public final class DescendreCollisionProvider {
                     BlockState state = blockLookup.apply(level, pos);
                     if (state == null || state.isAir()) continue;
 
-                    VoxelShape shape = Shapes.create(
-                            new AABB(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D)
-                    );
-                    shapes.add(shape);
+                    // Utilise la vraie VoxelShape du bloc au lieu d'un cube plein
+                    VoxelShape blockShape = state.getCollisionShape(level, pos);
+                    if (blockShape.isEmpty()) continue;
+
+                    // Offset la shape à la position monde du bloc
+                    VoxelShape offsetShape = blockShape.move(x, y, z);
+                    shapes.add(offsetShape);
                 }
             }
         }

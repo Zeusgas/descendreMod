@@ -3,25 +3,41 @@ package fr.descendre.network;
 import fr.descendre.DescendreMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Payload client→serveur : "je veux casser/poser un bloc cubic à cette position".
+ * Packet client→serveur pour les actions sur les blocs cubic.
  *
- * On utilise des ints 32 bits pour x/y/z (pas BlockPos.STREAM_CODEC qui tronque Y à 12 bits).
+ * Contrairement aux packets vanilla qui tronquent Y à 12 bits, on encode
+ * toutes les positions en int32 pour supporter Y jusqu'à -15000.
  *
- * Le serveur valide (range, portée) avant d'appliquer.
+ * Pour le placement, on inclut tout le contexte du BlockHitResult original
+ * afin que le serveur puisse reconstruire un UseOnContext complet, et ainsi
+ * appeler BlockItem.useOn() qui gère : orientation, connexions voisins, GUI, sons...
  */
 public record ServerboundCubicBlockActionPacket(
-        int x, int y, int z,
-        int blockStateId,
-        boolean isPlace
+        // Position du bloc cible (où on clique)
+        int targetX, int targetY, int targetZ,
+        // Face cliquée
+        Direction face,
+        // Position dans la face (0.0 à 1.0)
+        float hitX, float hitY, float hitZ,
+        // Main utilisée
+        InteractionHand hand,
+        // true = placement, false = cassage
+        boolean isPlace,
+        // Pour le placement : quel item (blockStateId du bloc à placer)
+        int blockStateId
 ) implements CustomPacketPayload {
 
     public static final Type<ServerboundCubicBlockActionPacket> TYPE = new Type<>(
@@ -32,21 +48,31 @@ public record ServerboundCubicBlockActionPacket(
             new StreamCodec<>() {
                 @Override
                 public ServerboundCubicBlockActionPacket decode(ByteBuf buf) {
-                    int x = buf.readInt();
-                    int y = buf.readInt();
-                    int z = buf.readInt();
-                    int stateId = ByteBufCodecs.VAR_INT.decode(buf);
+                    int tx = buf.readInt();
+                    int ty = buf.readInt();
+                    int tz = buf.readInt();
+                    Direction face = Direction.values()[buf.readByte()];
+                    float hx = buf.readFloat();
+                    float hy = buf.readFloat();
+                    float hz = buf.readFloat();
+                    InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
                     boolean isPlace = buf.readBoolean();
-                    return new ServerboundCubicBlockActionPacket(x, y, z, stateId, isPlace);
+                    int stateId = ByteBufCodecs.VAR_INT.decode(buf);
+                    return new ServerboundCubicBlockActionPacket(tx, ty, tz, face, hx, hy, hz, hand, isPlace, stateId);
                 }
 
                 @Override
-                public void encode(ByteBuf buf, ServerboundCubicBlockActionPacket packet) {
-                    buf.writeInt(packet.x);
-                    buf.writeInt(packet.y);
-                    buf.writeInt(packet.z);
-                    ByteBufCodecs.VAR_INT.encode(buf, packet.blockStateId);
-                    buf.writeBoolean(packet.isPlace);
+                public void encode(ByteBuf buf, ServerboundCubicBlockActionPacket p) {
+                    buf.writeInt(p.targetX);
+                    buf.writeInt(p.targetY);
+                    buf.writeInt(p.targetZ);
+                    buf.writeByte(p.face.ordinal());
+                    buf.writeFloat(p.hitX);
+                    buf.writeFloat(p.hitY);
+                    buf.writeFloat(p.hitZ);
+                    buf.writeBoolean(p.hand == InteractionHand.MAIN_HAND);
+                    buf.writeBoolean(p.isPlace);
+                    ByteBufCodecs.VAR_INT.encode(buf, p.blockStateId);
                 }
             };
 
@@ -55,24 +81,41 @@ public record ServerboundCubicBlockActionPacket(
         return TYPE;
     }
 
-    public static ServerboundCubicBlockActionPacket breakAt(BlockPos pos) {
+    /** Crée un packet de cassage depuis un BlockHitResult. */
+    public static ServerboundCubicBlockActionPacket breakFrom(BlockHitResult hit, InteractionHand hand) {
+        BlockPos pos = hit.getBlockPos();
+        Vec3 loc = hit.getLocation();
+        float hx = (float)(loc.x - pos.getX());
+        float hy = (float)(loc.y - pos.getY());
+        float hz = (float)(loc.z - pos.getZ());
         return new ServerboundCubicBlockActionPacket(
                 pos.getX(), pos.getY(), pos.getZ(),
-                Block.BLOCK_STATE_REGISTRY.getId(Blocks.AIR.defaultBlockState()),
-                false
+                hit.getDirection(), hx, hy, hz,
+                hand, false,
+                Block.BLOCK_STATE_REGISTRY.getId(Blocks.AIR.defaultBlockState())
         );
     }
 
-    public static ServerboundCubicBlockActionPacket placeAt(BlockPos pos, BlockState state) {
+    /** Crée un packet de placement depuis un BlockHitResult et le state à poser. */
+    public static ServerboundCubicBlockActionPacket placeFrom(BlockHitResult hit, InteractionHand hand, BlockState state) {
+        BlockPos pos = hit.getBlockPos();
+        Vec3 loc = hit.getLocation();
+        float hx = (float)(loc.x - pos.getX());
+        float hy = (float)(loc.y - pos.getY());
+        float hz = (float)(loc.z - pos.getZ());
         return new ServerboundCubicBlockActionPacket(
                 pos.getX(), pos.getY(), pos.getZ(),
-                Block.BLOCK_STATE_REGISTRY.getId(state),
-                true
+                hit.getDirection(), hx, hy, hz,
+                hand, true,
+                Block.BLOCK_STATE_REGISTRY.getId(state)
         );
     }
 
-    public BlockPos pos() {
-        return new BlockPos(x, y, z);
+    /** Reconstruit le BlockHitResult original (avec vraies coordonnées int32). */
+    public BlockHitResult toHitResult() {
+        BlockPos pos = new BlockPos(targetX, targetY, targetZ);
+        Vec3 location = new Vec3(targetX + hitX, targetY + hitY, targetZ + hitZ);
+        return new BlockHitResult(location, face, pos, false);
     }
 
     public BlockState resolveState() {

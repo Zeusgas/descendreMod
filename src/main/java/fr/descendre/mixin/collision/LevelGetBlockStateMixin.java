@@ -31,15 +31,23 @@ public abstract class LevelGetBlockStateMixin {
             BlockPos pos,
             CallbackInfoReturnable<BlockState> cir
     ) {
+        // D'abord vérifie si on est dans un contexte cubic ThreadLocal
+        fr.descendre.world.DescendreCubeLevel.Context ctx = fr.descendre.world.DescendreCubeLevel.current();
+        if (ctx != null) {
+            net.minecraft.world.level.block.state.BlockState cubic = ctx.map.getBlock(pos);
+            if (cubic != null && !cubic.isAir()) {
+                cir.setReturnValue(cubic);
+                return;
+            }
+        }
+
+        // Sinon, le code normal
         BlockState vanilla = cir.getReturnValue();
         if (vanilla == null || !vanilla.isAir()) return;
 
         Level level = (Level) (Object) this;
         BlockState cubic = DescendreCollisionProvider.lookupBlock(level, pos);
         if (cubic != null && !cubic.isAir()) {
-            if (!level.isClientSide() && pos.getY() < -1000) {
-                System.out.println("[GETSTATE] side=SERVER pos=" + pos + " returning=" + cubic);
-            }
             cir.setReturnValue(cubic);
         }
     }
