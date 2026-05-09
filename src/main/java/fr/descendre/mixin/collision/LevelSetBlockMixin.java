@@ -36,7 +36,7 @@ public abstract class LevelSetBlockMixin {
             int flags,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        // Vérifie d'abord si on est dans un contexte cubic
+        // CONTEXT CUBIC : tout setBlock pendant useOn écrit dans CubeMap
         fr.descendre.world.DescendreCubeLevel.Context ctx = fr.descendre.world.DescendreCubeLevel.current();
         if (ctx != null) {
             if (!fr.descendre.core.DescendreHeight.isInsideInternalRange(pos.getY())) {
@@ -48,30 +48,24 @@ public abstract class LevelSetBlockMixin {
             return;
         }
 
-        // Code normal
+        // Hors contexte : code normal
         Level level = (Level) (Object) this;
-
         boolean outOfVanillaRange = pos.getY() < level.getMinY() || pos.getY() > level.getMaxY();
         boolean cubicBlockExists = !outOfVanillaRange
                 && DescendreCollisionProvider.lookupBlock(level, pos) != null;
-
         if (!outOfVanillaRange && !cubicBlockExists) return;
         if (!DescendreHeight.isInsideInternalRange(pos.getY())) {
             cir.setReturnValue(false);
             return;
         }
-
         if (level instanceof ServerLevel serverLevel) {
             CubeMap map = DescendreCubeManager.get(serverLevel);
-            map.setBlock(pos, newState);
+            map.setBlockServer(pos, newState, serverLevel);
             cir.setReturnValue(true);
             return;
         }
 
         if (level instanceof ClientLevel) {
-            // Côté client : applique localement dans le cache cubic.
-            // Permet à vanilla (BlockItem.useOn) de "voir" le bloc juste posé pour décrémenter
-            // la stack, jouer le son, etc. Le serveur enverra ensuite la version officielle.
             fr.descendre.client.DescendreClientCubeCache.get().updateBlock(pos.immutable(), newState);
             cir.setReturnValue(true);
             return;

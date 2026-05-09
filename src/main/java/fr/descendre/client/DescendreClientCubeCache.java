@@ -5,6 +5,7 @@ import fr.descendre.network.ClientboundCubeDataPacket;
 import fr.descendre.world.cube.CubePos;
 import fr.descendre.world.cube.DescendreCube;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -55,6 +56,36 @@ public final class DescendreClientCubeCache {
                 }
             }
         }
+        // Crée les BlockEntity côté client à partir des positions reçues
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level != null) {
+            int worldOriginX = pos.x() << 4;
+            int worldOriginY = pos.y() << 4;
+            int worldOriginZ = pos.z() << 4;
+            for (int packed : packet.beLocalKeys()) {
+                int lx = packed & 0xF;
+                int ly = (packed >> 4) & 0xF;
+                int lz = (packed >> 8) & 0xF;
+                BlockState state = cube.getLocal(lx, ly, lz);
+                if (state == null || !(state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock entityBlock)) continue;
+
+                net.minecraft.core.BlockPos worldPos = new net.minecraft.core.BlockPos(
+                        worldOriginX + lx, worldOriginY + ly, worldOriginZ + lz
+                );
+                net.minecraft.world.level.block.entity.BlockEntity be = entityBlock.newBlockEntity(worldPos, state);
+                if (be == null) continue;
+                be.setLevel(mc.level);
+                blockEntities.put(worldPos, be);
+            }
+        }
+
+        if (pos.y() < -100 && packet.beLocalKeys().length > 0) {
+            System.out.println("[CUBE-BE-CLIENT] cubePos=" + pos + " received " + packet.beLocalKeys().length + " BE keys");
+            for (int k : packet.beLocalKeys()) {
+                System.out.println("  key=" + k + " (lx=" + (k & 0xF) + " ly=" + ((k >> 4) & 0xF) + " lz=" + ((k >> 8) & 0xF) + ")");
+            }
+            System.out.println("[CUBE-BE-CLIENT] total BE in cache after: " + blockEntities.size());
+        }
 
         cubes.put(pos, cube);
         // Le cube vient d'être (ré)inséré : invalider son mesh
@@ -66,24 +97,70 @@ public final class DescendreClientCubeCache {
         CubePos cubePos = CubePos.fromBlockPos(pos);
         DescendreCube cube = cubes.get(cubePos);
         if (cube == null) {
-            // Le cube n'est pas encore reçu : on ignore, le serveur enverra un CubeData complet plus tard.
             return;
         }
+
+        BlockState old = cube.getLocal(
+                CubePos.localX(pos.getX()),
+                CubePos.localY(pos.getY()),
+                CubePos.localZ(pos.getZ())
+        );
+
         cube.setLocal(
                 CubePos.localX(pos.getX()),
                 CubePos.localY(pos.getY()),
                 CubePos.localZ(pos.getZ()),
                 state
         );
-        // Invalidation ciblée : ce cube + voisins sur les bords concernés
+
+        // Gestion du BlockEntity côté client (symétrique à setLocalServer)
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level != null) {
+            BlockPos immutable = pos.immutable();
+            boolean oldHadBE = old != null && old.getBlock() instanceof net.minecraft.world.level.block.EntityBlock;
+            boolean newHasBE = state != null && state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock;
+            boolean blockTypeChanged = old == null || state == null || old.getBlock() != state.getBlock();
+
+            if (oldHadBE && blockTypeChanged) {
+                net.minecraft.world.level.block.entity.BlockEntity removed = blockEntities.remove(immutable);
+                if (removed != null) removed.setRemoved();
+            }
+
+            if (newHasBE && blockTypeChanged) {
+                net.minecraft.world.level.block.EntityBlock entityBlock =
+                        (net.minecraft.world.level.block.EntityBlock) state.getBlock();
+                net.minecraft.world.level.block.entity.BlockEntity be = entityBlock.newBlockEntity(immutable, state);
+                if (be != null) {
+                    be.setLevel(mc.level);
+                    blockEntities.put(immutable, be);
+                    System.out.println("[CUBE-BE-CLIENT-UPDATE] created BE at " + immutable + " type=" + be.getType());
+                }
+            }
+        }
+
         fr.descendre.client.render.DescendreMeshCache.get().invalidateBlock(pos);
     }
 
     /** Reçu par le handler de ClientboundForgetCubePacket. */
     public void forget(CubePos pos) {
-        cubes.remove(pos);
+        DescendreCube cube = cubes.remove(pos);
+        // Supprime les BlockEntity associés
+        if (cube != null) {
+            int worldOriginX = pos.x() << 4;
+            int worldOriginY = pos.y() << 4;
+            int worldOriginZ = pos.z() << 4;
+            for (int ly = 0; ly < 16; ly++) {
+                for (int lz = 0; lz < 16; lz++) {
+                    for (int lx = 0; lx < 16; lx++) {
+                        net.minecraft.core.BlockPos wp = new net.minecraft.core.BlockPos(
+                                worldOriginX + lx, worldOriginY + ly, worldOriginZ + lz
+                        );
+                        blockEntities.remove(wp);
+                    }
+                }
+            }
+        }
         fr.descendre.client.render.DescendreMeshCache.get().forget(pos);
-        // Les voisins doivent recalculer leur culling : leurs faces vers ce cube sont peut-être à nouveau visibles
         for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
             CubePos neighbor = new CubePos(
                     pos.x() + dir.getStepX(),
@@ -123,4 +200,46 @@ public final class DescendreClientCubeCache {
         cubes.clear();
         fr.descendre.client.render.DescendreMeshCache.get().clear();
     }
+
+    /** Map des BlockEntity côté client, par BlockPos. */
+    private final java.util.Map<net.minecraft.core.BlockPos, net.minecraft.world.level.block.entity.BlockEntity> blockEntities
+            = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Récupère un BlockEntity côté client. */
+    public net.minecraft.world.level.block.entity.BlockEntity getBlockEntity(net.minecraft.core.BlockPos pos) {
+        return blockEntities.get(pos);
+    }
+
+    /** Met à jour ou crée un BlockEntity côté client à partir d'un NBT. */
+    public void updateBlockEntity(net.minecraft.core.BlockPos pos, net.minecraft.nbt.CompoundTag nbt) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return;
+
+        net.minecraft.world.level.block.state.BlockState state = getBlock(pos);
+        if (state == null || !(state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock entityBlock)) {
+            blockEntities.remove(pos);
+            return;
+        }
+
+        net.minecraft.world.level.block.entity.BlockEntity be = blockEntities.get(pos);
+        if (be == null || be.getType() != entityBlock.newBlockEntity(pos, state).getType()) {
+            be = entityBlock.newBlockEntity(pos, state);
+            if (be == null) return;
+            be.setLevel(mc.level);
+            blockEntities.put(pos.immutable(), be);
+        }
+
+        // TODO : appliquer le NBT via loadWithComponents (API ValueInput, à voir étape future)
+    }
+
+    /** Supprime un BlockEntity côté client (quand on oublie un cube par exemple). */
+    public void removeBlockEntity(net.minecraft.core.BlockPos pos) {
+        blockEntities.remove(pos);
+    }
+
+    /** Retourne tous les BlockEntity cubic actuellement en cache. */
+    public java.util.Set<net.minecraft.world.level.block.entity.BlockEntity> getAllBlockEntities() {
+        return new java.util.HashSet<>(blockEntities.values());
+    }
+
 }

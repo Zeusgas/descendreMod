@@ -21,16 +21,22 @@ import java.util.Map;
 /**
  * Payload serveur→client : "voici un cube complet, mémorise-le".
  *
- * Format réseau (palette compressée) :
+ * Format :
  *   - x, y, z (3 × int)              : position du cube
  *   - paletteSize (varInt)            : nombre d'entrées palette
- *   - palette[paletteSize] (varInt)   : ID de chaque BlockState (depuis Block.BLOCK_STATE_REGISTRY)
+ *   - palette[paletteSize] (varInt)   : ID de chaque BlockState
  *   - data[4096] (varInt)             : indices vers la palette
+ *   - beCount (varInt)                : nombre de positions BlockEntity
+ *   - bePackedKeys[beCount] (varInt)  : positions locales packées (lx | ly<<4 | lz<<8)
+ *
+ * Les BlockEntity sont créés vides côté client. Pour les données dynamiques
+ * (contenu coffres, etc.), un packet ClientboundBlockEntityUpdatePacket est envoyé séparément.
  */
 public record ClientboundCubeDataPacket(
         int cubeX, int cubeY, int cubeZ,
         int[] paletteIds,
-        int[] data
+        int[] data,
+        int[] beLocalKeys
 ) implements CustomPacketPayload {
 
     public static final Type<ClientboundCubeDataPacket> TYPE = new Type<>(
@@ -55,7 +61,13 @@ public record ClientboundCubeDataPacket(
                     for (int i = 0; i < data.length; i++) {
                         data[i] = ByteBufCodecs.VAR_INT.decode(buf);
                     }
-                    return new ClientboundCubeDataPacket(x, y, z, palette, data);
+
+                    int beCount = ByteBufCodecs.VAR_INT.decode(buf);
+                    int[] beKeys = new int[beCount];
+                    for (int i = 0; i < beCount; i++) {
+                        beKeys[i] = ByteBufCodecs.VAR_INT.decode(buf);
+                    }
+                    return new ClientboundCubeDataPacket(x, y, z, palette, data, beKeys);
                 }
 
                 @Override
@@ -71,6 +83,10 @@ public record ClientboundCubeDataPacket(
                     for (int idx : packet.data) {
                         ByteBufCodecs.VAR_INT.encode(buf, idx);
                     }
+                    ByteBufCodecs.VAR_INT.encode(buf, packet.beLocalKeys.length);
+                    for (int k : packet.beLocalKeys) {
+                        ByteBufCodecs.VAR_INT.encode(buf, k);
+                    }
                 }
             };
 
@@ -84,7 +100,6 @@ public record ClientboundCubeDataPacket(
         List<BlockState> palette = new ArrayList<>();
         Map<BlockState, Integer> stateToIndex = new HashMap<>();
 
-        // Index 0 = air par convention
         BlockState air = Blocks.AIR.defaultBlockState();
         palette.add(air);
         stateToIndex.put(air, 0);
@@ -111,8 +126,12 @@ public record ClientboundCubeDataPacket(
             paletteIds[i] = Block.BLOCK_STATE_REGISTRY.getId(palette.get(i));
         }
 
+        // Positions des BlockEntity en local key packé
+        Map<Integer, ?> beMap = cube.blockEntitiesView();
+        int[] beKeys = beMap.keySet().stream().mapToInt(Integer::intValue).toArray();
+
         CubePos pos = cube.pos();
-        return new ClientboundCubeDataPacket(pos.x(), pos.y(), pos.z(), paletteIds, data);
+        return new ClientboundCubeDataPacket(pos.x(), pos.y(), pos.z(), paletteIds, data, beKeys);
     }
 
     /** Reconstruit la palette en BlockState (côté client). */

@@ -6,6 +6,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.function.BiConsumer;
 import java.util.HashMap;
@@ -136,6 +138,35 @@ public final class CubeMap {
         this.changeListener = listener;
     }
 
+    /**
+     * Variante serveur de setBlock qui gère aussi la création/destruction des BlockEntity
+     * pour les blocs implémentant EntityBlock.
+     */
+    public void setBlockServer(BlockPos pos, BlockState state, ServerLevel level) {
+        CubePos cubePos = CubePos.fromBlockPos(pos);
+        DescendreCube cube = cubes.computeIfAbsent(cubePos, p -> new DescendreCube(p));
+        cube.setLocalServer(
+                CubePos.localX(pos.getX()),
+                CubePos.localY(pos.getY()),
+                CubePos.localZ(pos.getZ()),
+                state,
+                level,
+                pos.immutable()
+        );
+    }
 
+    /**
+     * Retourne le BlockEntity à cette position, ou null s'il n'y en a pas
+     * ou si le cube n'est pas chargé.
+     */
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        DescendreCube cube = cubes.get(CubePos.fromBlockPos(pos));
+        if (cube == null) return null;
+        return cube.getBlockEntityLocal(
+                CubePos.localX(pos.getX()),
+                CubePos.localY(pos.getY()),
+                CubePos.localZ(pos.getZ())
+        );
+    }
 
 }

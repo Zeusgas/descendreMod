@@ -56,6 +56,12 @@ public final class DescendreNetwork {
                 DescendreNetwork::handleCubicBlockAction
         );
 
+        registrar.playToClient(
+                ClientboundBlockEntityUpdatePacket.TYPE,
+                ClientboundBlockEntityUpdatePacket.STREAM_CODEC,
+                DescendreNetwork::handleBlockEntityUpdate
+        );
+
     }
 
     private static void handleCubicBlockAction(ServerboundCubicBlockActionPacket packet, IPayloadContext context) {
@@ -92,33 +98,31 @@ public final class DescendreNetwork {
                 net.minecraft.world.phys.BlockHitResult hitResult = packet.toHitResult();
                 net.minecraft.world.item.ItemStack stack = player.getItemInHand(packet.hand());
 
-                // Exécute l'opération dans un contexte cubic :
-                // Tous les getBlockState/setBlock appels par Block.use() seront redirigés vers CubeMap
+                // Tout est exécuté dans un contexte cubic : tous les level.getBlockState/setBlock
+                // pendant cette opération seront redirigés vers CubeMap par nos mixins.
                 fr.descendre.world.DescendreCubeLevel.runWithContext(level, map, () -> {
-                    // 1. D'abord, interaction avec le bloc visé (porte, coffre, levier...)
+                    // 1. Interaction avec le bloc visé (porte qui s'ouvre, levier, coffre)
                     net.minecraft.world.level.block.state.BlockState targetState = map.getBlock(targetPos);
                     if (targetState != null && !targetState.isAir() && !player.isShiftKeyDown()) {
-                        // Appelle l'interaction avec item d'abord (ouvrir GUI, etc.)
-                        net.minecraft.world.InteractionResult useResult = targetState.useItemOn(
+                        // Avec item : ouvre coffres, etc.
+                        net.minecraft.world.InteractionResult withItem = targetState.useItemOn(
                                 stack, level, player, packet.hand(), hitResult
                         );
-                        if (useResult.consumesAction()) return;
+                        if (withItem.consumesAction()) return;
 
-                        // Sinon, interaction sans item
-                        net.minecraft.world.InteractionResult plainResult = targetState.useWithoutItem(level, player, hitResult);
-                        if (plainResult.consumesAction()) return;
-
-                        // Si pas d'interaction, essayer avec l'item en main
-                        if (!(stack.getItem() instanceof net.minecraft.world.item.BlockItem)) {
-                            return; // Pas d'item en main, interaction finie
-                        }
+                        // Sans item : portes, leviers, boutons
+                        net.minecraft.world.InteractionResult plain = targetState.useWithoutItem(level, player, hitResult);
+                        if (plain.consumesAction()) return;
                     }
 
-                    // 2. Sinon, placement normal
+                    // 2. Placement
                     if (!(stack.getItem() instanceof net.minecraft.world.item.BlockItem blockItem)) return;
 
                     net.minecraft.world.item.context.UseOnContext useOnContext =
                             new net.minecraft.world.item.context.UseOnContext(level, player, packet.hand(), stack, hitResult);
+
+                    // BlockItem.useOn() gère TOUT : orientation, double blocks (portes/lits),
+                    // décrément inventaire, sons. Nos mixins redirigent les lectures/écritures.
                     blockItem.useOn(useOnContext);
                 });
             }
@@ -148,13 +152,19 @@ public final class DescendreNetwork {
     private static void handleCubeBlockUpdate(ClientboundCubeBlockUpdatePacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             DescendreClientCubeCache.get().updateBlock(packet.pos(), packet.resolveState());
-            System.out.println("[CLIENT-UPDATE] pos=" + packet.pos() + " state=" + packet.resolveState());
+            System.out.println("[CLIENT-UPDATE-RAW] pos=" + packet.pos() + " state=" + packet.resolveState());
         });
     }
 
     private static void handleForgetCube(ClientboundForgetCubePacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             DescendreClientCubeCache.get().forget(packet.cubePos());
+        });
+    }
+
+    private static void handleBlockEntityUpdate(ClientboundBlockEntityUpdatePacket packet, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            fr.descendre.client.DescendreClientCubeCache.get().updateBlockEntity(packet.pos(), packet.nbt());
         });
     }
 

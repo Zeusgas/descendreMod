@@ -86,7 +86,7 @@ public final class DescendreCubeLevel {
 
         BlockPos immutable = pos.immutable();
         ctx.dirtyOverride.put(immutable, state);
-        ctx.map.setBlock(immutable, state);
+        ctx.map.setBlockServer(immutable, state, ctx.level);
         return true;
     }
 }

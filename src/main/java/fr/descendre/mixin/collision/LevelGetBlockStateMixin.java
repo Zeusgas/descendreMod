@@ -31,9 +31,14 @@ public abstract class LevelGetBlockStateMixin {
             BlockPos pos,
             CallbackInfoReturnable<BlockState> cir
     ) {
-        // D'abord vérifie si on est dans un contexte cubic ThreadLocal
+        // CONTEXT CUBIC : pendant un useOn/useItemOn, on lit dans le CubeMap en priorité
         fr.descendre.world.DescendreCubeLevel.Context ctx = fr.descendre.world.DescendreCubeLevel.current();
         if (ctx != null) {
+            net.minecraft.world.level.block.state.BlockState dirty = ctx.dirtyOverride.get(pos.immutable());
+            if (dirty != null) {
+                cir.setReturnValue(dirty);
+                return;
+            }
             net.minecraft.world.level.block.state.BlockState cubic = ctx.map.getBlock(pos);
             if (cubic != null && !cubic.isAir()) {
                 cir.setReturnValue(cubic);
@@ -41,13 +46,25 @@ public abstract class LevelGetBlockStateMixin {
             }
         }
 
-        // Sinon, le code normal
+        // Hors contexte : code normal (consulter CubeMap si vanilla retourne AIR)
         BlockState vanilla = cir.getReturnValue();
         if (vanilla == null || !vanilla.isAir()) return;
-
         Level level = (Level) (Object) this;
+        if (pos.getY() < level.getMinY() || pos.getY() > level.getMaxY()) {
+            BlockState cubic = DescendreCollisionProvider.lookupBlock(level, pos);
+            if (cubic != null && !cubic.isAir()) {
+                cir.setReturnValue(cubic);
+                return;
+            }
+            // IMPORTANT : si on est hors range vanilla, on retourne AIR fictif au lieu de laisser
+            // vanilla retourner un BlockState bizarre (le DEFAULT VOID block ou un crash)
+            return;
+        }
         BlockState cubic = DescendreCollisionProvider.lookupBlock(level, pos);
         if (cubic != null && !cubic.isAir()) {
+            if (pos.getY() < -1000) {
+                System.out.println("[GETSTATE-NOCTX] pos=" + pos + " returning=" + cubic + " thread=" + Thread.currentThread().getName());
+            }
             cir.setReturnValue(cubic);
         }
     }
