@@ -143,15 +143,24 @@ public final class CubeMap {
      * pour les blocs implémentant EntityBlock.
      */
     public void setBlockServer(BlockPos pos, BlockState state, ServerLevel level) {
+        setBlockServerInternal(pos, state, level, true);
+    }
+
+    /**
+     * @param triggerNeighborUpdates si true, appelle updateShape sur les voisins après l'écriture.
+     *                                Empêche la récursion infinie quand on est déjà dans un updateShape.
+     */
+    private void setBlockServerInternal(BlockPos pos, BlockState state, ServerLevel level, boolean triggerNeighborUpdates) {
         CubePos cubePos = CubePos.fromBlockPos(pos);
         DescendreCube cube = cubes.computeIfAbsent(cubePos, p -> new DescendreCube(p));
+        BlockPos immutable = pos.immutable();
         cube.setLocalServer(
                 CubePos.localX(pos.getX()),
                 CubePos.localY(pos.getY()),
                 CubePos.localZ(pos.getZ()),
                 state,
                 level,
-                pos.immutable()
+                immutable
         );
 
         if (cube.isEmpty()) {
@@ -159,7 +168,30 @@ public final class CubeMap {
         }
 
         if (changeListener != null) {
-            changeListener.accept(pos.immutable(), state);
+            changeListener.accept(immutable, state);
+        }
+
+        // Propage updateShape aux 6 voisins (équivalent du flag UPDATE_NEIGHBORS)
+        if (triggerNeighborUpdates) {
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                net.minecraft.core.BlockPos neighborPos = immutable.relative(dir);
+                BlockState neighborState = getBlock(neighborPos);
+                if (neighborState == null || neighborState.isAir()) continue;
+
+                // updateShape sur le voisin avec NOUS comme déclencheur
+                BlockState updated = neighborState.updateShape(
+                        level,                          // LevelReader
+                        level,                          // ScheduledTickAccess
+                        neighborPos,                    // notre voisin
+                        dir.getOpposite(),              // direction depuis le voisin vers nous
+                        immutable,                      // nous
+                        state,                          // notre nouveau state
+                        level.getRandom()
+                );
+                if (updated != neighborState) {
+                    setBlockServerInternal(neighborPos, updated, level, false);  // pas de récursion
+                }
+            }
         }
     }
 

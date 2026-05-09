@@ -103,6 +103,7 @@ public final class DescendreNetwork {
                 fr.descendre.world.DescendreCubeLevel.runWithContext(level, map, () -> {
                     // 1. Interaction avec le bloc visé (porte qui s'ouvre, levier, coffre)
                     net.minecraft.world.level.block.state.BlockState targetState = map.getBlock(targetPos);
+                    System.out.println("[INTERACT] target=" + targetPos + " state=" + targetState + " sneak=" + player.isShiftKeyDown());
                     if (targetState != null && !targetState.isAir() && !player.isShiftKeyDown()) {
                         // Avec item : ouvre coffres, etc.
                         net.minecraft.world.InteractionResult withItem = targetState.useItemOn(
@@ -113,6 +114,8 @@ public final class DescendreNetwork {
                         // Sans item : portes, leviers, boutons
                         net.minecraft.world.InteractionResult plain = targetState.useWithoutItem(level, player, hitResult);
                         if (plain.consumesAction()) return;
+
+                        System.out.println("[INTERACT] withItem=" + withItem + " plain=" + plain);
                     }
 
                     // 2. Placement
