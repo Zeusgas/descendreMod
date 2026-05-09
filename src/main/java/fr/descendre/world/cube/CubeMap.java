@@ -153,6 +153,14 @@ public final class CubeMap {
                 level,
                 pos.immutable()
         );
+
+        if (cube.isEmpty()) {
+            cubes.remove(cubePos);
+        }
+
+        if (changeListener != null) {
+            changeListener.accept(pos.immutable(), state);
+        }
     }
 
     /**
