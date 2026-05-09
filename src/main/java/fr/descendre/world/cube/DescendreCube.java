@@ -217,15 +217,73 @@ public final class DescendreCube {
     }*/
 
     /** Sérialisation NBT — désactivée temporairement (TODO étape future). */
+    /** Sérialise tous les BlockEntity du cube vers une ListTag NBT. */
     public net.minecraft.nbt.ListTag saveBlockEntities(net.minecraft.core.HolderLookup.Provider registries) {
-        return new net.minecraft.nbt.ListTag();
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        for (Map.Entry<Integer, BlockEntity> entry : blockEntities.entrySet()) {
+            net.minecraft.nbt.CompoundTag entryTag = new net.minecraft.nbt.CompoundTag();
+            entryTag.putInt("key", entry.getKey());
+            try {
+                net.minecraft.nbt.CompoundTag beNbt = entry.getValue().saveWithFullMetadata(registries);
+                entryTag.put("data", beNbt);
+                list.add(entryTag);
+            } catch (Exception e) {
+                System.err.println("[Descendre] Erreur save BE @ " + entry.getKey() + ": " + e.getMessage());
+            }
+        }
+        return list;
     }
 
     /** Désérialisation NBT — désactivée temporairement (TODO étape future). */
+    /** Charge les BlockEntity depuis NBT (les BE doivent déjà avoir été créés via setLocalDeserialize). */
     public void loadBlockEntities(net.minecraft.nbt.ListTag list,
                                   net.minecraft.core.HolderLookup.Provider registries,
                                   net.minecraft.server.level.ServerLevel level) {
-        // no-op
+        for (int i = 0; i < list.size(); i++) {
+            net.minecraft.nbt.CompoundTag entryTag = list.getCompoundOrEmpty(i);
+            int key = entryTag.getIntOr("key", -1);
+            if (key < 0) continue;
+
+            BlockEntity be = blockEntities.get(key);
+            if (be == null) continue;  // Pas de BE pour cette position (le bloc n'est plus un EntityBlock)
+
+            net.minecraft.nbt.CompoundTag data = entryTag.getCompoundOrEmpty("data");
+
+            try (net.minecraft.util.ProblemReporter.ScopedCollector reporter =
+                         new net.minecraft.util.ProblemReporter.ScopedCollector(org.slf4j.LoggerFactory.getLogger("DescendreCube"))) {
+                net.minecraft.world.level.storage.ValueInput input =
+                        net.minecraft.world.level.storage.TagValueInput.create(reporter, registries, data);
+                be.loadWithComponents(input);
+            } catch (Exception e) {
+                System.err.println("[Descendre] Erreur load BE @ " + key + ": " + e.getMessage());
+            }
+        }
+    }
+    /**
+     * Pose un bloc et crée son BlockEntity si c'est un EntityBlock,
+     * sans avoir besoin d'un ServerLevel (utilisé au chargement disque).
+     * Le level sera attaché plus tard via attachLevel().
+     */
+    public void setLocalDeserialize(int lx, int ly, int lz, BlockState state, BlockPos worldPos) {
+        setLocal(lx, ly, lz, state);
+
+        if (state != null && state.getBlock() instanceof EntityBlock entityBlock) {
+            BlockEntity be = entityBlock.newBlockEntity(worldPos, state);
+            if (be != null) {
+                int key = lx | (ly << 4) | (lz << 8);
+                blockEntities.put(key, be);
+            }
+        }
+    }
+
+    /**
+     * Attache un ServerLevel à tous les BlockEntity du cube.
+     * À appeler après chargement disque, quand le level est disponible.
+     */
+    public void attachLevel(ServerLevel level) {
+        for (BlockEntity be : blockEntities.values()) {
+            be.setLevel(level);
+        }
     }
 
 }

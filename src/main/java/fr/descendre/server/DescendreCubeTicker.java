@@ -59,7 +59,10 @@ public final class DescendreCubeTicker {
             if (loaded >= loadBudget) break;
             if (map.getCube(pos) != null) continue;
             DescendreCube cube = storage.getCubeOrLoad(pos);
-            if (cube != null) loaded++;
+            if (cube != null) {
+                cube.attachLevel(level);
+                loaded++;
+            }
         }
 
         // ---------- 2. Synchronisation réseau pour chaque joueur ----------

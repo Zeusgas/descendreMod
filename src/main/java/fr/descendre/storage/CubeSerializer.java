@@ -3,11 +3,11 @@ package fr.descendre.storage;
 import fr.descendre.core.DescendreConstants;
 import fr.descendre.world.cube.CubePos;
 import fr.descendre.world.cube.DescendreCube;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -16,19 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Sérialise et désérialise un DescendreCube vers/depuis NBT.
- *
- * Format NBT :
- * {
- *   "x": int, "y": int, "z": int,           // position du cube
- *   "palette": [BlockState, ...],            // liste unique des BlockStates utilisés
- *   "data": int[]                            // 4096 indices vers la palette (un par bloc)
- * }
- *
- * On utilise une palette pour économiser : un cube de pierre pleine prend
- * ~30 octets au lieu de 32 ko (avant gzip).
- */
 public final class CubeSerializer {
 
     private CubeSerializer() {}
@@ -41,11 +28,9 @@ public final class CubeSerializer {
         tag.putInt("y", pos.y());
         tag.putInt("z", pos.z());
 
-        // Construction de la palette
         List<BlockState> palette = new ArrayList<>();
         Map<BlockState, Integer> stateToIndex = new HashMap<>();
 
-        // Index 0 = AIR par convention
         BlockState air = Blocks.AIR.defaultBlockState();
         palette.add(air);
         stateToIndex.put(air, 0);
@@ -67,13 +52,21 @@ public final class CubeSerializer {
             }
         }
 
-        // Sérialisation de la palette
         ListTag paletteTag = new ListTag();
         for (BlockState state : palette) {
             paletteTag.add(NbtUtils.writeBlockState(state));
         }
         tag.put("palette", paletteTag);
         tag.putIntArray("data", data);
+
+        // Sérialise les BlockEntity
+        net.minecraft.core.HolderLookup.Provider registries = net.minecraft.core.RegistryAccess.EMPTY;
+        // Note : ici on n'a pas accès au level/registries du jeu, mais EMPTY suffit pour
+        // la plupart des BE (ChestBE, FurnaceBE, etc. ne dépendent pas des registries dynamiques)
+        net.minecraft.nbt.ListTag beList = cube.saveBlockEntities(registries);
+        if (!beList.isEmpty()) {
+            tag.put("blockEntities", beList);
+        }
 
         return tag;
     }
@@ -86,7 +79,6 @@ public final class CubeSerializer {
 
         DescendreCube cube = new DescendreCube(pos);
 
-        // Reconstruction de la palette
         ListTag paletteTag = tag.getListOrEmpty("palette");
         BlockState[] palette = new BlockState[paletteTag.size()];
         for (int i = 0; i < paletteTag.size(); i++) {
@@ -96,9 +88,12 @@ public final class CubeSerializer {
 
         int[] data = tag.getIntArray("data").orElse(new int[0]);
         if (data.length != DescendreConstants.CUBE_VOLUME) {
-            // Données corrompues ou format ancien : on retourne un cube vide
             return cube;
         }
+
+        int worldOriginX = pos.x() << 4;
+        int worldOriginY = pos.y() << 4;
+        int worldOriginZ = pos.z() << 4;
 
         for (int ly = 0; ly < 16; ly++) {
             for (int lz = 0; lz < 16; lz++) {
@@ -107,7 +102,12 @@ public final class CubeSerializer {
                     if (paletteIdx >= 0 && paletteIdx < palette.length) {
                         BlockState state = palette[paletteIdx];
                         if (state != null && !state.isAir()) {
-                            cube.setLocal(lx, ly, lz, state);
+                            BlockPos worldPos = new BlockPos(
+                                    worldOriginX + lx,
+                                    worldOriginY + ly,
+                                    worldOriginZ + lz
+                            );
+                            cube.setLocalDeserialize(lx, ly, lz, state, worldPos);
                         }
                     }
                 }
@@ -115,6 +115,14 @@ public final class CubeSerializer {
         }
 
         cube.markSaved();
+
+        // Charge les BlockEntity (les BE ont déjà été créés via setLocalDeserialize)
+        net.minecraft.nbt.ListTag beList = tag.getListOrEmpty("blockEntities");
+        if (!beList.isEmpty()) {
+            net.minecraft.core.HolderLookup.Provider registries = net.minecraft.core.RegistryAccess.EMPTY;
+            cube.loadBlockEntities(beList, registries, null);
+        }
+
         return cube;
     }
 

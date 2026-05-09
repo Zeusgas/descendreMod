@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Intercepte les actions sur les blocs cubic côté client pour envoyer un packet custom
@@ -53,6 +54,51 @@ public abstract class MultiPlayerGameModeMixin {
         ClientPacketDistributor.sendToServer(
                 ServerboundCubicBlockActionPacket.breakFrom(hit, InteractionHand.MAIN_HAND)
         );
+    }
+
+    @Inject(
+            method = "handlePickItemFromBlock",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void descendre$onPickBlock(
+            BlockPos pos,
+            boolean includeData,
+            org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci
+    ) {
+        if (!isCubicBlock(pos)) return;
+
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
+
+        BlockState state = DescendreClientCubeCache.get().getBlock(pos);
+        if (state == null || state.isAir()) {
+            ci.cancel();
+            return;
+        }
+
+        net.minecraft.world.item.ItemStack stack = state.getCloneItemStack(mc.level, pos, includeData);
+        if (stack.isEmpty()) {
+            ci.cancel();
+            return;
+        }
+
+        net.minecraft.world.entity.player.Inventory inventory = mc.player.getInventory();
+
+        if (mc.player.gameMode() == net.minecraft.world.level.GameType.CREATIVE) {
+            int slot = inventory.getSuitableHotbarSlot();
+            inventory.setItem(slot, stack);
+            inventory.setSelectedSlot(slot);
+            mc.gameMode.handleCreativeModeItemAdd(stack, 36 + slot);
+        } else {
+            // Survie : si l'item existe dans le hotbar, on switche dessus
+            int matchingSlot = inventory.findSlotMatchingItem(stack);
+            if (matchingSlot != -1 && net.minecraft.world.entity.player.Inventory.isHotbarSlot(matchingSlot)) {
+                inventory.setSelectedSlot(matchingSlot);
+            }
+        }
+
+        ci.cancel();
     }
 
     @Inject(
