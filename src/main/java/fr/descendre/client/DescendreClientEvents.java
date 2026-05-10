@@ -9,6 +9,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import fr.descendre.client.render.DescendreBreakProgress;
+import fr.descendre.client.DescendreClientCubeCache;
 
 /**
  * Hook côté client : appelé à chaque frame après le rendu des blocs translucides.
@@ -18,11 +19,17 @@ public final class DescendreClientEvents {
     private DescendreClientEvents() {}
 
     public static void register(IEventBus modBus) {
-        // RenderLevelStageEvent passe par le bus global NeoForge (côté game), pas le mod bus.
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterTranslucentBlocks.class,
                 DescendreClientEvents::onRender);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.client.event.ClientTickEvent.Post.class,
+                DescendreClientEvents::onClientTick);
     }
 
+    private static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null || mc.isPaused()) return;
+        DescendreClientCubeCache.get().tickBlockEntities();
+    }
     private static void onRender(RenderLevelStageEvent.AfterTranslucentBlocks event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;

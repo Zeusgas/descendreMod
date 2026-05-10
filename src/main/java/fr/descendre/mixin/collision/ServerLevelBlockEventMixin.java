@@ -1,11 +1,15 @@
 package fr.descendre.mixin.collision;
 
 import fr.descendre.network.ClientboundCubicBlockEventPacket;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,15 +42,16 @@ public abstract class ServerLevelBlockEventMixin {
             )
     )
     private void descendre$redirectBlockEventBroadcast(
-            net.minecraft.server.players.PlayerList playerList,
+            PlayerList playerList,
             Player except,
             double x,
             double y,
             double z,
             double radius,
-            net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension,
+            ResourceKey<Level> dimension,
             Packet<?> packet
     ) {
+        System.out.println("[BLOCK-EVENT-REDIRECT] called! pos=" + x + "," + y + "," + z + " packet=" + packet.getClass().getSimpleName());
         ServerLevel self = (ServerLevel) (Object) this;
 
         // Si Y dans la range vanilla : laisse vanilla faire son broadcast normal
@@ -69,7 +74,7 @@ public abstract class ServerLevelBlockEventMixin {
 
         ClientboundCubicBlockEventPacket cubicPacket = ClientboundCubicBlockEventPacket.of(
                 ix, iy, iz,
-                net.minecraft.core.registries.BuiltInRegistries.BLOCK.getId(vanillaPacket.getBlock()),
+                BuiltInRegistries.BLOCK.getId(vanillaPacket.getBlock()),
                 vanillaPacket.getB0(),
                 vanillaPacket.getB1()
         );
@@ -80,6 +85,9 @@ public abstract class ServerLevelBlockEventMixin {
             double dy = player.getY() - y;
             double dz = player.getZ() - z;
             if (dx * dx + dy * dy + dz * dz > radius * radius) continue;
+
+            System.out.println("[BLOCK-EVENT-SEND] to=" + player.getGameProfile().name() + " pos=(" + ix + "," + iy + "," + iz + ") paramA=" + vanillaPacket.getB0() + " paramB=" + vanillaPacket.getB1());
+
             PacketDistributor.sendToPlayer(player, cubicPacket);
         }
     }

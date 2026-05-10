@@ -11,7 +11,8 @@
     "collision.LevelGetBlockEntityMixin",
     "collision.ClientLevelGloballyRenderedBEMixin",
     "collision.ServerLevelLevelEventMixin",
-    "collision.ClientLevelDestroyProgressMixin"
+    "collision.ClientLevelDestroyProgressMixin",
+    "collision.ServerLevelBlockEventMixin"
   ],
   "injectors": {
     "defaultRequire": 1

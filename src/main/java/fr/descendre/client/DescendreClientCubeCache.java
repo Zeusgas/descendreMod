@@ -35,6 +35,37 @@ public final class DescendreClientCubeCache {
 
     private DescendreClientCubeCache() {}
 
+
+
+    /** Tick tous les BlockEntity cubic. À appeler chaque ClientTickEvent.Post. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void tickBlockEntities() {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return;
+
+        for (java.util.Map.Entry<net.minecraft.core.BlockPos, net.minecraft.world.level.block.entity.BlockEntity> entry
+                : blockEntities.entrySet()) {
+            net.minecraft.core.BlockPos pos = entry.getKey();
+            net.minecraft.world.level.block.entity.BlockEntity be = entry.getValue();
+            if (be == null || be.isRemoved()) continue;
+
+            net.minecraft.world.level.block.state.BlockState state = getBlock(pos);
+            if (state == null) continue;
+
+            net.minecraft.world.level.block.entity.BlockEntityTicker ticker =
+                    state.getTicker(mc.level, be.getType());
+            if (ticker == null) continue;
+
+            try {
+                ticker.tick(mc.level, pos, state, be);
+            } catch (Exception e) {
+                System.err.println("[Descendre] Erreur tick BE @ " + pos + ": " + e.getMessage());
+            }
+        }
+    }
+
+
+
     /** Reçu par le handler de ClientboundCubeDataPacket. Reconstruit le cube et l'ajoute au cache. */
     public void putFromPacket(ClientboundCubeDataPacket packet) {
         CubePos pos = packet.cubePos();

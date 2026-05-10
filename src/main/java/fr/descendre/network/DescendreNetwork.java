@@ -68,6 +68,12 @@ public final class DescendreNetwork {
                 DescendreNetwork::handleLevelEventCubic
         );
 
+        registrar.playToClient(
+                ClientboundCubicBlockEventPacket.TYPE,
+                ClientboundCubicBlockEventPacket.STREAM_CODEC,
+                DescendreNetwork::handleCubicBlockEvent
+        );
+
     }
 
     private static void handleCubicBlockAction(ServerboundCubicBlockActionPacket packet, IPayloadContext context) {
@@ -183,6 +189,22 @@ public final class DescendreNetwork {
             if (mc.level == null) return;
             // Rejoue l'événement localement : vanilla connaît tous les eventId et fera le bon rendu
             mc.level.levelEvent(packet.eventId(), packet.pos(), packet.data());
+        });
+    }
+
+    private static void handleCubicBlockEvent(ClientboundCubicBlockEventPacket packet, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.level == null) return;
+
+            // Récupère le BE cubic et déclenche son triggerEvent (anime le coffre/etc.)
+            System.out.println("[BLOCK-EVENT-RECV] pos=" + packet.pos() + " paramA=" + packet.paramA() + " paramB=" + packet.paramB());
+            net.minecraft.world.level.block.entity.BlockEntity be =
+                    fr.descendre.client.DescendreClientCubeCache.get().getBlockEntity(packet.pos());
+            System.out.println("[BLOCK-EVENT-RECV] BE found=" + (be != null) + (be != null ? " type=" + be.getClass().getSimpleName() : ""));
+            if (be == null) return;
+            boolean result = be.triggerEvent(packet.paramA(), packet.paramB());
+            System.out.println("[BLOCK-EVENT-RECV] triggerEvent result=" + result);
         });
     }
 
