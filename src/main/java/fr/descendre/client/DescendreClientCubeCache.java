@@ -94,6 +94,11 @@ public final class DescendreClientCubeCache {
 
     /** Reçu par le handler de ClientboundCubeBlockUpdatePacket. */
     public void updateBlock(BlockPos pos, BlockState state) {
+
+        if (pos.getY() < -1000) {
+            System.out.println("[CLIENT-UPDATE-BLOCK] pos=" + pos + " state=" + state);
+        }
+
         CubePos cubePos = CubePos.fromBlockPos(pos);
         DescendreCube cube = cubes.get(cubePos);
         if (cube == null) {
@@ -136,6 +141,17 @@ public final class DescendreClientCubeCache {
                     System.out.println("[CUBE-BE-CLIENT-UPDATE] created BE at " + immutable + " type=" + be.getType());
                 }
             }
+
+            else if (newHasBE && !blockTypeChanged) {
+                // Même type de bloc, mais state changé (ex: coffre SINGLE → RIGHT)
+                // → mettre à jour le state du BE existant pour que le rendu suive
+                net.minecraft.world.level.block.entity.BlockEntity existing = blockEntities.get(immutable);
+                if (existing != null) {
+                    existing.setBlockState(state);
+                    System.out.println("[BE-STATE-UPDATE] pos=" + immutable + " newState=" + state);
+                }
+             }
+
         }
 
         fr.descendre.client.render.DescendreMeshCache.get().invalidateBlock(pos);

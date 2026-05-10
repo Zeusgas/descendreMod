@@ -87,7 +87,7 @@ public final class DescendreNetwork {
                 // CASSAGE
                 net.minecraft.world.level.block.state.BlockState existing = map.getBlock(targetPos);
                 if (existing == null || existing.isAir()) return;
-                map.setBlock(targetPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                map.setBlockServer(targetPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), level);
                 if (player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SURVIVAL) {
                     net.minecraft.world.level.block.Block.dropResources(existing, level, targetPos, null, player, player.getMainHandItem());
                 }
