@@ -62,6 +62,12 @@ public final class DescendreNetwork {
                 DescendreNetwork::handleBlockEntityUpdate
         );
 
+        registrar.playToClient(
+                ClientboundLevelEventCubicPacket.TYPE,
+                ClientboundLevelEventCubicPacket.STREAM_CODEC,
+                DescendreNetwork::handleLevelEventCubic
+        );
+
     }
 
     private static void handleCubicBlockAction(ServerboundCubicBlockActionPacket packet, IPayloadContext context) {
@@ -170,6 +176,17 @@ public final class DescendreNetwork {
             fr.descendre.client.DescendreClientCubeCache.get().updateBlockEntity(packet.pos(), packet.nbt());
         });
     }
+
+    private static void handleLevelEventCubic(ClientboundLevelEventCubicPacket packet, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.level == null) return;
+            // Rejoue l'événement localement : vanilla connaît tous les eventId et fera le bon rendu
+            mc.level.levelEvent(packet.eventId(), packet.pos(), packet.data());
+        });
+    }
+
+
 
     // ---------- Helpers d'envoi (côté serveur) ----------
 

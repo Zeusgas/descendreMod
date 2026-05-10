@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import fr.descendre.client.render.DescendreBreakProgress;
 
 /**
  * Hook côté client : appelé à chaque frame après le rendu des blocs translucides.
@@ -32,7 +33,13 @@ public final class DescendreClientEvents {
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
         DescendreRenderDispatcher.renderAll(event.getPoseStack(), bufferSource, cameraPos);
-
         bufferSource.endBatch();
+
+        // Rendu des fissures de cassage progressif (utilise un buffer source dédié)
+        MultiBufferSource.BufferSource crumblingBuffer = mc.renderBuffers().crumblingBufferSource();
+        fr.descendre.client.render.DescendreBreakProgress.get().render(
+                event.getPoseStack(), crumblingBuffer, cameraPos.x, cameraPos.y, cameraPos.z
+        );
+        crumblingBuffer.endBatch();
     }
 }

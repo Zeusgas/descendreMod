@@ -9,7 +9,9 @@
     "collision.LevelSetBlockMixin",
     "collision.MultiPlayerGameModeMixin",
     "collision.LevelGetBlockEntityMixin",
-    "collision.ClientLevelGloballyRenderedBEMixin"
+    "collision.ClientLevelGloballyRenderedBEMixin",
+    "collision.ServerLevelLevelEventMixin",
+    "collision.ClientLevelDestroyProgressMixin"
   ],
   "injectors": {
     "defaultRequire": 1
