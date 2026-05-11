@@ -12,7 +12,9 @@
     "collision.ClientLevelGloballyRenderedBEMixin",
     "collision.ServerLevelLevelEventMixin",
     "collision.ClientLevelDestroyProgressMixin",
-    "collision.ServerLevelBlockEventMixin"
+    "collision.ServerLevelBlockEventMixin",
+    "collision.ServerLevelScheduleTickMixin",
+    "collision.FallingBlockCubicTickMixin"
   ],
   "injectors": {
     "defaultRequire": 1

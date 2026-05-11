@@ -31,6 +31,11 @@ public final class DescendreCubeTicker {
     private DescendreCubeTicker() {}
 
     public static void onServerTick(Iterable<ServerLevel> levels) {
+        // Les scheduled ticks cubic doivent tourner tous les ticks serveur.
+        for (ServerLevel level : levels) {
+            DescendreScheduledTicks.get(level).tick(level);
+        }
+
         tickCounter++;
         if (tickCounter < DescendreServerConfig.tickInterval()) return;
         tickCounter = 0;
@@ -90,5 +95,6 @@ public final class DescendreCubeTicker {
             map.removeCube(cube.pos());
             unloaded++;
         }
+
     }
 }

@@ -1,146 +1,115 @@
-[10mai2026 12:03:11.683] [main/INFO] [net.neoforged.fml.startup.Entrypoint/]: JVM Uptime at startup: 113ms
-[10mai2026 12:03:11.691] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Starting FancyModLoader version 10.0.36 (CLIENT in DEV)
-[10mai2026 12:03:11.692] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Game directory: C:\Users\Gaspard du Reau\Documents\java for mc\DescendreNeoForge\runs\client
-[10mai2026 12:03:11.742] [main/INFO] [net.neoforged.fml.loading.EarlyServiceDiscovery/]: Found 2 early service jars (out of 108) in 20ms
-[10mai2026 12:03:11.742] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Early Services:
-[10mai2026 12:03:11.743] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/earlydisplay/10.0.36/dbd0e11d545443f602addede111c39d9639708f9/earlydisplay-10.0.36.jar
-[10mai2026 12:03:11.743] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/loader/10.0.36/f72ab4d3e755fe736829883d90430a281527aca/loader-10.0.36.jar
-[10mai2026 12:03:11.747] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
-[10mai2026 12:03:12.142] [ForkJoinPool.commonPool-worker-8/INFO] [net.neoforged.fml.loading.moddiscovery.locators.GameLocator/]: Detected a joined NeoForge and Minecraft configuration. Applying filtering...
-[10mai2026 12:03:12.233] [ForkJoinPool.commonPool-worker-8/INFO] [net.neoforged.fml.loading.moddiscovery.locators.InDevFolderLocator/CORE]: Got mod coordinates DescendreNeoForge%%C:\Users\Gaspard du Reau\Documents\java for mc\DescendreNeoForge\build\resources\main;DescendreNeoForge%%C:\Users\Gaspard du Reau\Documents\java for mc\DescendreNeoForge\build\classes\java\main from env
-[10mai2026 12:03:12.262] [fml-loadingscreen/INFO] [net.neoforged.fml.earlydisplay.render.LoadingScreenRenderer/]: GL info: AMD Radeon RX 7900 GRE GL version 3.3.0 Core Profile Context 26.3.1.260303, ATI Technologies Inc.
-[10mai2026 12:03:12.448] [ForkJoinPool.commonPool-worker-8/WARN] [net.neoforged.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: library:mixinextras.neoforge. Using jar(C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-neoforge/0.5.3/a0919957808de97707c5fb4ce073e66aeef3e187/mixinextras-neoforge-0.5.3.jar)
-[10mai2026 12:03:12.449] [ForkJoinPool.commonPool-worker-8/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 1 dependencies adding them to mods collection
-[10mai2026 12:03:12.452] [ForkJoinPool.commonPool-worker-8/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
+[11mai2026 15:07:43.164] [main/INFO] [net.neoforged.fml.startup.Entrypoint/]: JVM Uptime at startup: 108ms
+[11mai2026 15:07:43.171] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Starting FancyModLoader version 10.0.36 (CLIENT in DEV)
+[11mai2026 15:07:43.171] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Game directory: C:\Users\Gaspard du Reau\Documents\java for mc\DescendreNeoForge\runs\client
+[11mai2026 15:07:43.218] [main/INFO] [net.neoforged.fml.loading.EarlyServiceDiscovery/]: Found 2 early service jars (out of 108) in 19ms
+[11mai2026 15:07:43.218] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Early Services:
+[11mai2026 15:07:43.218] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/earlydisplay/10.0.36/dbd0e11d545443f602addede111c39d9639708f9/earlydisplay-10.0.36.jar
+[11mai2026 15:07:43.219] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/loader/10.0.36/f72ab4d3e755fe736829883d90430a281527aca/loader-10.0.36.jar
+[11mai2026 15:07:43.223] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[11mai2026 15:07:43.605] [ForkJoinPool.commonPool-worker-6/INFO] [net.neoforged.fml.loading.moddiscovery.locators.GameLocator/]: Detected a joined NeoForge and Minecraft configuration. Applying filtering...
+[11mai2026 15:07:43.670] [ForkJoinPool.commonPool-worker-6/INFO] [net.neoforged.fml.loading.moddiscovery.locators.InDevFolderLocator/CORE]: Got mod coordinates DescendreNeoForge%%C:\Users\Gaspard du Reau\Documents\java for mc\DescendreNeoForge\build\resources\main;DescendreNeoForge%%C:\Users\Gaspard du Reau\Documents\java for mc\DescendreNeoForge\build\classes\java\main from env
+[11mai2026 15:07:43.705] [fml-loadingscreen/INFO] [net.neoforged.fml.earlydisplay.render.LoadingScreenRenderer/]: GL info: AMD Radeon RX 7900 GRE GL version 3.3.0 Core Profile Context 26.3.1.260303, ATI Technologies Inc.
+[11mai2026 15:07:43.847] [ForkJoinPool.commonPool-worker-6/WARN] [net.neoforged.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: library:mixinextras.neoforge. Using jar(C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-neoforge/0.5.3/a0919957808de97707c5fb4ce073e66aeef3e187/mixinextras-neoforge-0.5.3.jar)
+[11mai2026 15:07:43.847] [ForkJoinPool.commonPool-worker-6/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 1 dependencies adding them to mods collection
+[11mai2026 15:07:43.849] [ForkJoinPool.commonPool-worker-6/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
      Mod List:
 		Name Version (Mod Id)
 
 		Descendre 0.1.0 (descendre)
 		Minecraft 1.21.11 (minecraft)
 		NeoForge 21.11.42 (neoforge)
-[10mai2026 12:03:12.645] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/Gaspard%20du%20Reau/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.16.5+mixin.0.8.7/80fc3a9f592673cea87f4cd702f87991c6c9fe4d/sponge-mixin-0.16.5+mixin.0.8.7.jar Service=FML Env=CLIENT
-[10mai2026 12:03:12.703] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Plugins:
-[10mai2026 12:03:12.703] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/.gradle/repositories/ng_dummy_ng/net/neoforged/neoforge/21.11.42/neoforge-21.11.42.jar > net.neoforged.neoforge-coremods-21.11.42.jar
-[10mai2026 12:03:12.831] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Building game content classloader:
+[11mai2026 15:07:44.047] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/Gaspard%20du%20Reau/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.16.5+mixin.0.8.7/80fc3a9f592673cea87f4cd702f87991c6c9fe4d/sponge-mixin-0.16.5+mixin.0.8.7.jar Service=FML Env=CLIENT
+[11mai2026 15:07:44.092] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Plugins:
+[11mai2026 15:07:44.092] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/.gradle/repositories/ng_dummy_ng/net/neoforged/neoforge/21.11.42/neoforge-21.11.42.jar > net.neoforged.neoforge-coremods-21.11.42.jar
+[11mai2026 15:07:44.221] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Building game content classloader:
  - descendre (composite(folder(C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/build/resources/main), folder(C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/build/classes/java/main)))
  - minecraft (composite(jar(C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/.gradle/repositories/ng_dummy_ng/net/minecraft/client/1.21.11/client-1.21.11-client-extra.jar), filtered(jar(C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/.gradle/repositories/ng_dummy_ng/net/neoforged/neoforge/21.11.42/neoforge-21.11.42.jar))))
  - mixinextras.neoforge (jar(C:/Users/Gaspard du Reau/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-neoforge/0.5.3/a0919957808de97707c5fb4ce073e66aeef3e187/mixinextras-neoforge-0.5.3.jar))
  - neoforge (composite(filtered(jar(C:/Users/Gaspard du Reau/Documents/java for mc/DescendreNeoForge/.gradle/repositories/ng_dummy_ng/net/neoforged/neoforge/21.11.42/neoforge-21.11.42.jar))))
  - net.neoforged.fml.generated (empty(VirtualJar/net.neoforged.fml.generated))
-[10mai2026 12:03:12.846] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Built game content classloader in 26ms
-[10mai2026 12:03:14.106] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 290 Datafixer optimizations took 297 milliseconds
-[10mai2026 12:03:14.271] [pool-8-thread-1/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
-[10mai2026 12:03:19.007] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
-[10mai2026 12:03:19.008] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
-[10mai2026 12:03:19.009] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
-[10mai2026 12:03:19.011] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
-[10mai2026 12:03:19.011] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
-[10mai2026 12:03:19.013] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [waypoint, modify, waypoint, color, reset] and [waypoint, modify, waypoint, color, color] with inputs: [reset]
-[10mai2026 12:03:19.066] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.11.42, for MC 1.21.11
-[10mai2026 12:03:19.511] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
-[10mai2026 12:03:19.525] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
-[10mai2026 12:03:19.584] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.3+5
-[10mai2026 12:03:19.692] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Using optional rendering extensions: GL_ARB_buffer_storage, GL_KHR_debug, GL_ARB_vertex_attrib_binding, GL_ARB_direct_state_access, GL_EXT_texture_filter_anisotropic
-[10mai2026 12:03:20.145] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources, mod/descendre, mod/neoforge
-[10mai2026 12:03:20.416] [resourceLoad/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_pua-17.0.01.hex, loading
-[10mai2026 12:03:20.416] [resourceLoad/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-17.0.01.hex, loading
-[10mai2026 12:03:20.508] [resourceLoad/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_jp_patch-17.0.01.hex, loading
-[10mai2026 12:03:21.559] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on Haut-parleurs (gasceinte)
-[10mai2026 12:03:21.559] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
-[10mai2026 12:03:21.559] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
-[10mai2026 12:03:21.569] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x128x0 minecraft:textures/atlas/decorated_pot.png-atlas
-[10mai2026 12:03:21.570] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 2048x1024x0 minecraft:textures/atlas/armor_trims.png-atlas
-[10mai2026 12:03:21.577] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
-[10mai2026 12:03:21.577] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
-[10mai2026 12:03:21.578] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x2 minecraft:textures/atlas/blocks.png-atlas
-[10mai2026 12:03:21.594] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/chest.png-atlas
-[10mai2026 12:03:21.595] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x128x0 minecraft:textures/atlas/celestials.png-atlas
-[10mai2026 12:03:21.595] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
-[10mai2026 12:03:21.596] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/beds.png-atlas
-[10mai2026 12:03:21.596] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/items.png-atlas
-[10mai2026 12:03:21.602] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x0 minecraft:textures/atlas/gui.png-atlas
-[10mai2026 12:03:21.614] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x0 minecraft:textures/atlas/map_decorations.png-atlas
-[10mai2026 12:03:21.615] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/signs.png-atlas
-[10mai2026 12:03:21.615] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/shulker_boxes.png-atlas
-[10mai2026 12:03:21.699] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
-[10mai2026 12:03:31.739] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1470 recipes
-[10mai2026 12:03:31.747] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1584 advancements
-[10mai2026 12:03:31.747] [Render thread/INFO] [net.neoforged.neoforge.common.crafting.RecipePriorityManager/]: Loaded 0 recipe priority overrides
-[10mai2026 12:03:31.888] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.11
-[10mai2026 12:03:31.888] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
-[10mai2026 12:03:32.273] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Loading 0 persistent chunks...
-[10mai2026 12:03:32.286] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
-[10mai2026 12:03:32.665] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Loading 49 chunks for player spawn...
-[10mai2026 12:03:32.665] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Preparing spawn area: 16%
-[10mai2026 12:03:32.788] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Preparing spawn area: 16%
-[10mai2026 12:03:32.839] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Time elapsed: 566 ms
-[10mai2026 12:03:33.039] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:7ca04c25] logged in with entity id 4 at (-2.6093598807137015, -9998.0, 2.968329334692841)
-[10mai2026 12:03:33.092] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
-[10mai2026 12:03:33.292] [Render thread/WARN] [net.minecraft.client.multiplayer.ClientPacketListener/]: Ignoring chat session from Dev due to missing Services public key
-[10mai2026 12:03:33.292] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 8, from 10
-[10mai2026 12:03:33.294] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 78 advancements
-[10mai2026 12:03:33.296] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 6, from 0
-[10mai2026 12:03:33.393] [Render thread/INFO] [net.minecraft.client.renderer.DynamicUniformStorage/]: Resizing Dynamic Transforms UBO, capacity limit of 2 reached during a single frame. New capacity will be 4.
-[10mai2026 12:03:33.467] [Render thread/INFO] [net.minecraft.client.renderer.DynamicUniformStorage/]: Resizing Dynamic Transforms UBO, capacity limit of 4 reached during a single frame. New capacity will be 8.
-[10mai2026 12:03:35.681] [Render thread/INFO] [net.minecraft.client.renderer.DynamicUniformStorage/]: Resizing Dynamic Transforms UBO, capacity limit of 8 reached during a single frame. New capacity will be 16.
-[10mai2026 12:03:36.040] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Survival Mode]
-[10mai2026 12:03:36.044] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Survival Mode
-[10mai2026 12:03:37.038] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Spectator Mode]
-[10mai2026 12:03:37.043] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Spectator Mode
-[10mai2026 12:03:39.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Survival Mode]
-[10mai2026 12:03:39.789] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Survival Mode
-[10mai2026 12:03:51.989] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Creative Mode]
-[10mai2026 12:03:51.992] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Creative Mode
-[10mai2026 12:04:06.290] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[10mai2026 12:04:06.313] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[10mai2026 12:04:06.407] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
-[10mai2026 12:04:06.502] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[10mai2026 12:04:06.591] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[10mai2026 12:04:28.940] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[10mai2026 12:04:28.956] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[10mai2026 12:04:29.046] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
-[10mai2026 12:04:29.136] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[10mai2026 12:04:29.223] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[10mai2026 12:04:58.599] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 80 advancements
-[10mai2026 12:05:12.042] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev has made the advancement [Acquire Hardware]
-[10mai2026 12:05:12.052] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Dev has made the advancement [Acquire Hardware]
-[10mai2026 12:05:12.053] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 112 advancements
-[10mai2026 12:05:30.540] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Survival Mode]
-[10mai2026 12:05:30.546] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Survival Mode
-[10mai2026 12:05:37.990] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Creative Mode]
-[10mai2026 12:05:37.998] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Creative Mode
-[10mai2026 12:06:12.189] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[10mai2026 12:06:12.206] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[10mai2026 12:06:12.332] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
-[10mai2026 12:06:12.458] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[10mai2026 12:06:12.582] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[10mai2026 12:06:54.147] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 114 advancements
-[10mai2026 12:07:23.090] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[10mai2026 12:07:23.106] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[10mai2026 12:07:23.233] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
-[10mai2026 12:07:23.357] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[10mai2026 12:07:23.482] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[10mai2026 12:08:26.782] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-05-10_12.08.26.png
-[10mai2026 12:08:34.199] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 115 advancements
-[10mai2026 12:08:35.144] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 118 advancements
-[10mai2026 12:09:05.239] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[10mai2026 12:09:05.253] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[10mai2026 12:09:05.379] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
-[10mai2026 12:09:05.504] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[10mai2026 12:09:05.628] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[10mai2026 12:09:07.862] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
-[10mai2026 12:09:07.890] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
-[10mai2026 12:09:07.890] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
-[10mai2026 12:09:07.907] [Server thread/INFO] [net.minecraft.server.network.ServerCommonPacketListenerImpl/]: Stopping singleplayer server as player logged out
-[10mai2026 12:09:08.157] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
-[10mai2026 12:09:08.158] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
-[10mai2026 12:09:08.158] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
-[10mai2026 12:09:08.193] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[10mai2026 12:09:08.212] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
-[10mai2026 12:09:08.243] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[10mai2026 12:09:08.254] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[10mai2026 12:09:08.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World): All chunks are saved
-[10mai2026 12:09:08.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (void): All chunks are saved
-[10mai2026 12:09:08.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[10mai2026 12:09:08.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[10mai2026 12:09:08.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[11mai2026 15:07:44.234] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Built game content classloader in 23ms
+[11mai2026 15:07:45.475] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 290 Datafixer optimizations took 287 milliseconds
+[11mai2026 15:07:45.635] [pool-8-thread-1/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[11mai2026 15:07:50.184] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[11mai2026 15:07:50.185] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[11mai2026 15:07:50.187] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[11mai2026 15:07:50.188] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[11mai2026 15:07:50.188] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[11mai2026 15:07:50.190] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [waypoint, modify, waypoint, color, reset] and [waypoint, modify, waypoint, color, color] with inputs: [reset]
+[11mai2026 15:07:50.257] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.11.42, for MC 1.21.11
+[11mai2026 15:07:50.674] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[11mai2026 15:07:50.687] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
+[11mai2026 15:07:50.760] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.3+5
+[11mai2026 15:07:50.856] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Using optional rendering extensions: GL_ARB_buffer_storage, GL_KHR_debug, GL_ARB_vertex_attrib_binding, GL_ARB_direct_state_access, GL_EXT_texture_filter_anisotropic
+[11mai2026 15:07:51.280] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources, mod/descendre, mod/neoforge
+[11mai2026 15:07:51.523] [resourceLoad/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_pua-17.0.01.hex, loading
+[11mai2026 15:07:51.523] [resourceLoad/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-17.0.01.hex, loading
+[11mai2026 15:07:51.590] [resourceLoad/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_jp_patch-17.0.01.hex, loading
+[11mai2026 15:07:52.651] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on Haut-parleurs (gasceinte)
+[11mai2026 15:07:52.652] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
+[11mai2026 15:07:52.652] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
+[11mai2026 15:07:52.660] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x128x0 minecraft:textures/atlas/decorated_pot.png-atlas
+[11mai2026 15:07:52.661] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 2048x1024x0 minecraft:textures/atlas/armor_trims.png-atlas
+[11mai2026 15:07:52.668] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[11mai2026 15:07:52.669] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
+[11mai2026 15:07:52.669] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x2 minecraft:textures/atlas/blocks.png-atlas
+[11mai2026 15:07:52.685] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/chest.png-atlas
+[11mai2026 15:07:52.687] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x128x0 minecraft:textures/atlas/celestials.png-atlas
+[11mai2026 15:07:52.687] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
+[11mai2026 15:07:52.688] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/beds.png-atlas
+[11mai2026 15:07:52.689] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/items.png-atlas
+[11mai2026 15:07:52.695] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x0 minecraft:textures/atlas/gui.png-atlas
+[11mai2026 15:07:52.706] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[11mai2026 15:07:52.706] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/signs.png-atlas
+[11mai2026 15:07:52.706] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x0 minecraft:textures/atlas/shulker_boxes.png-atlas
+[11mai2026 15:07:52.792] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[11mai2026 15:07:57.586] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1470 recipes
+[11mai2026 15:07:57.592] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1584 advancements
+[11mai2026 15:07:57.594] [Render thread/INFO] [net.neoforged.neoforge.common.crafting.RecipePriorityManager/]: Loaded 0 recipe priority overrides
+[11mai2026 15:07:57.721] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.11
+[11mai2026 15:07:57.721] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[11mai2026 15:07:58.111] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Loading 0 persistent chunks...
+[11mai2026 15:07:58.124] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[11mai2026 15:07:58.557] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Loading 49 chunks for player spawn...
+[11mai2026 15:07:58.557] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Preparing spawn area: 16%
+[11mai2026 15:07:58.627] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Preparing spawn area: 16%
+[11mai2026 15:07:58.727] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Time elapsed: 617 ms
+[11mai2026 15:07:58.931] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:c069fe6f] logged in with entity id 3 at (6.253396122820841, -9998.0, -6.272627741460317)
+[11mai2026 15:07:58.988] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[11mai2026 15:07:59.182] [Render thread/WARN] [net.minecraft.client.multiplayer.ClientPacketListener/]: Ignoring chat session from Dev due to missing Services public key
+[11mai2026 15:07:59.185] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 139 advancements
+[11mai2026 15:07:59.196] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 8, from 10
+[11mai2026 15:07:59.200] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 6, from 0
+[11mai2026 15:07:59.246] [Render thread/INFO] [net.minecraft.client.renderer.DynamicUniformStorage/]: Resizing Dynamic Transforms UBO, capacity limit of 2 reached during a single frame. New capacity will be 4.
+[11mai2026 15:07:59.301] [Render thread/INFO] [net.minecraft.client.renderer.DynamicUniformStorage/]: Resizing Dynamic Transforms UBO, capacity limit of 4 reached during a single frame. New capacity will be 8.
+[11mai2026 15:08:03.728] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Creative Mode]
+[11mai2026 15:08:03.735] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Creative Mode
+[11mai2026 15:08:06.629] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Teleported Dev to 0.500000, -10000.000000, 0.500000]
+[11mai2026 15:08:06.639] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Teleported Dev to 0.500000, -10000.000000, 0.500000
+[11mai2026 15:08:06.783] [Render thread/INFO] [net.minecraft.client.renderer.DynamicUniformStorage/]: Resizing Dynamic Transforms UBO, capacity limit of 8 reached during a single frame. New capacity will be 16.
+[11mai2026 15:08:28.127] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[11mai2026 15:08:28.152] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[11mai2026 15:08:28.282] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
+[11mai2026 15:08:28.406] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[11mai2026 15:08:28.524] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[11mai2026 15:09:14.127] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[11mai2026 15:09:14.146] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[11mai2026 15:09:14.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
+[11mai2026 15:09:14.410] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[11mai2026 15:09:14.545] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[11mai2026 15:09:20.958] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
+[11mai2026 15:09:20.977] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
+[11mai2026 15:09:20.978] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
+[11mai2026 15:09:20.998] [Server thread/INFO] [net.minecraft.server.network.ServerCommonPacketListenerImpl/]: Stopping singleplayer server as player logged out
+[11mai2026 15:09:21.270] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[11mai2026 15:09:21.270] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[11mai2026 15:09:21.270] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[11mai2026 15:09:21.287] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[11mai2026 15:09:21.301] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/descendre:void
+[11mai2026 15:09:21.332] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[11mai2026 15:09:21.344] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[11mai2026 15:09:21.371] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World): All chunks are saved
+[11mai2026 15:09:21.371] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (void): All chunks are saved
+[11mai2026 15:09:21.371] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[11mai2026 15:09:21.371] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[11mai2026 15:09:21.371] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved

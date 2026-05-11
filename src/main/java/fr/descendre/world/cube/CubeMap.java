@@ -8,6 +8,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import fr.descendre.server.DescendreScheduledTicks;
+import net.minecraft.world.level.block.FallingBlock;
 
 import java.util.function.BiConsumer;
 import java.util.HashMap;
@@ -173,6 +175,10 @@ public final class CubeMap {
             System.out.println("[SERVER-CHANGE] pos=" + immutable + " state=" + state + " trigger=" + triggerNeighborUpdates);
         }
 
+        if (triggerNeighborUpdates) {
+            descendre$scheduleFallingBlocksAround(level, immutable, state);
+        }
+
         // Propage updateShape aux 6 voisins (pour les blocs interconnectés : portes, coffres, barrières)
         if (triggerNeighborUpdates) {
             for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
@@ -180,11 +186,20 @@ public final class CubeMap {
                 BlockState neighborState = getBlock(neighborPos);
                 if (neighborState == null || neighborState.isAir()) continue;
 
+                // 1. updateShape : pour les connexions visuelles (portes, barrières, coffres)
                 BlockState updated = neighborState.updateShape(
                         level, level, neighborPos, dir.getOpposite(), immutable, state, level.getRandom()
                 );
                 if (updated != neighborState) {
                     setBlockServerInternal(neighborPos, updated, level, false);
+                    neighborState = updated; // important pour le neighborChanged ci-dessous
+                }
+
+                // 2. neighborChanged : pour les comportements (sand qui tombe, plantes, redstone)
+                try {
+                    neighborState.handleNeighborChanged(level, neighborPos, state.getBlock(), null, false);
+                } catch (Exception e) {
+                    System.err.println("[Descendre] handleNeighborChanged @ " + neighborPos + ": " + e.getMessage());
                 }
             }
         }
@@ -202,6 +217,40 @@ public final class CubeMap {
                 CubePos.localY(pos.getY()),
                 CubePos.localZ(pos.getZ())
         );
+    }
+
+    private void descendre$scheduleFallingBlocksAround(ServerLevel level, BlockPos changedPos, BlockState newState) {
+        // Cas 1 : on vient de poser un falling block avec de l'air dessous.
+        if (newState.getBlock() instanceof FallingBlock && descendre$canFallThrough(level, changedPos.below())) {
+            DescendreScheduledTicks.get(level).schedule(
+                    changedPos,
+                    newState.getBlock(),
+                    2,
+                    level.getGameTime()
+            );
+        }
+
+        // Cas 2 : on vient de casser/remplacer le bloc sous du sable/gravier/etc.
+        BlockPos abovePos = changedPos.above();
+        BlockState aboveState = getBlock(abovePos);
+
+        if (aboveState != null
+                && aboveState.getBlock() instanceof FallingBlock
+                && descendre$canFallThrough(level, changedPos)) {
+            DescendreScheduledTicks.get(level).schedule(
+                    abovePos,
+                    aboveState.getBlock(),
+                    2,
+                    level.getGameTime()
+            );
+        }
+    }
+
+    private boolean descendre$canFallThrough(ServerLevel level, BlockPos pos) {
+        BlockState state = getBlock(pos);
+        return state == null
+                || state.isAir()
+                || state.getCollisionShape(level, pos).isEmpty();
     }
 
 }
