@@ -16,6 +16,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.world.level.BlockAndTintGetter;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +27,7 @@ import java.util.Map;
 
 public final class DescendreCubeMesh {
 
-    public record QuadEntry(int lx, int ly, int lz, BakedQuad quad) {}
+    public record QuadEntry(int lx, int ly, int lz, BakedQuad quad, int tintColor) {}
 
     private static final Direction[] DIRECTIONS = Direction.values();
 
@@ -86,6 +89,10 @@ public final class DescendreCubeMesh {
 
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
 
+        Minecraft minecraft = Minecraft.getInstance();
+        BlockColors blockColors = minecraft.getBlockColors();
+        BlockAndTintGetter tintGetter = minecraft.level;
+
         int worldOriginX = cubePos.x() << 4;
         int worldOriginY = cubePos.y() << 4;
         int worldOriginZ = cubePos.z() << 4;
@@ -135,14 +142,26 @@ public final class DescendreCubeMesh {
 
                         for (BlockModelPart part : parts) {
                             for (BakedQuad quad : part.getQuads(direction)) {
-                                bucket.add(new QuadEntry(lx, ly, lz, quad));
+                                bucket.add(new QuadEntry(
+                                    lx,
+                                    ly,
+                                    lz,
+                                    quad,
+                                    descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad)
+                            ));
                             }
                         }
                     }
 
                     for (BlockModelPart part : parts) {
                         for (BakedQuad quad : part.getQuads(null)) {
-                            bucket.add(new QuadEntry(lx, ly, lz, quad));
+                            bucket.add(new QuadEntry(
+                                    lx,
+                                    ly,
+                                    lz,
+                                    quad,
+                                    descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad)
+                            ));
                         }
                     }
                 }
@@ -151,4 +170,32 @@ public final class DescendreCubeMesh {
 
         return new DescendreCubeMesh(cubePos, result);
     }
+
+    private static int descendre$getTintColor(
+            BlockColors blockColors,
+            BlockAndTintGetter tintGetter,
+            BlockState state,
+            BlockPos pos,
+            BakedQuad quad
+    ) {
+        if (!quad.isTinted()) {
+            return 0xFFFFFF;
+        }
+
+        if (tintGetter == null) {
+            return 0xFFFFFF;
+        }
+
+        int color = blockColors.getColor(state, tintGetter, pos, quad.tintIndex());
+
+        if (color == -1) {
+            return 0xFFFFFF;
+        }
+
+        return color;
+    }
+
+
+
+
 }

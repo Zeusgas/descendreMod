@@ -60,12 +60,18 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
         poseStack.pushPose();
         poseStack.translate(renderX, renderY, renderZ);
 
+        int tintColor = quadEntry.tintColor();
+
+        float red = ((tintColor >> 16) & 255) / 255.0F;
+        float green = ((tintColor >> 8) & 255) / 255.0F;
+        float blue = (tintColor & 255) / 255.0F;
+
         consumer.putBulkData(
                 poseStack.last(),
                 quadEntry.quad(),
-                1.0F,
-                1.0F,
-                1.0F,
+                red,
+                green,
+                blue,
                 1.0F,
                 FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY
