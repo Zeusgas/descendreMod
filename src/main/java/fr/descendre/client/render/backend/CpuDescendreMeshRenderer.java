@@ -15,6 +15,9 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 
+import fr.descendre.client.render.backend.DescendreRenderPass;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+
 
 import java.util.List;
 import java.util.Map;
@@ -32,30 +35,20 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
             DescendreCubeMesh mesh,
             PoseStack poseStack,
             MultiBufferSource bufferSource,
-            Vec3 cameraPos
+            Vec3 cameraPos,
+            DescendreRenderPass pass
     ) {
         if (mesh == null || mesh.isEmpty()) {
             return;
         }
 
-        for (Map.Entry<RenderType, List<DescendreCubeMesh.QuadEntry>> entry : mesh.quadsByType().entrySet()) {
-            RenderType renderType = entry.getKey();
-            List<DescendreCubeMesh.QuadEntry> quads = entry.getValue();
-
-            if (quads == null || quads.isEmpty()) {
-                continue;
-            }
-
-            VertexConsumer consumer = bufferSource.getBuffer(renderType);
-
-            for (DescendreCubeMesh.QuadEntry quadEntry : quads) {
-                renderQuad(mesh, quadEntry, poseStack, consumer, cameraPos);
-            }
-
+        if (pass == DescendreRenderPass.OPAQUE) {
+            renderOpaqueBlocks(mesh, poseStack, bufferSource, cameraPos);
+            return;
         }
 
+        renderTranslucentBlocks(mesh, poseStack, bufferSource, cameraPos);
         renderFluids(mesh, bufferSource, cameraPos);
-
     }
 
     private static void renderQuad(
@@ -184,6 +177,60 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
         public VertexConsumer setLineWidth(float width) {
             delegate.setLineWidth(width);
             return this;
+        }
+    }
+
+    private static void renderOpaqueBlocks(
+            DescendreCubeMesh mesh,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Vec3 cameraPos
+    ) {
+        for (Map.Entry<RenderType, List<DescendreCubeMesh.QuadEntry>> entry : mesh.quadsByType().entrySet()) {
+            RenderType renderType = entry.getKey();
+
+            if (renderType == RenderTypes.translucentMovingBlock()) {
+                continue;
+            }
+
+            List<DescendreCubeMesh.QuadEntry> quads = entry.getValue();
+
+            if (quads == null || quads.isEmpty()) {
+                continue;
+            }
+
+            VertexConsumer consumer = bufferSource.getBuffer(renderType);
+
+            for (DescendreCubeMesh.QuadEntry quadEntry : quads) {
+                renderQuad(mesh, quadEntry, poseStack, consumer, cameraPos);
+            }
+        }
+    }
+
+    private static void renderTranslucentBlocks(
+            DescendreCubeMesh mesh,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Vec3 cameraPos
+    ) {
+        for (Map.Entry<RenderType, List<DescendreCubeMesh.QuadEntry>> entry : mesh.quadsByType().entrySet()) {
+            RenderType renderType = entry.getKey();
+
+            if (renderType != RenderTypes.translucentMovingBlock()) {
+                continue;
+            }
+
+            List<DescendreCubeMesh.QuadEntry> quads = entry.getValue();
+
+            if (quads == null || quads.isEmpty()) {
+                continue;
+            }
+
+            VertexConsumer consumer = bufferSource.getBuffer(renderType);
+
+            for (DescendreCubeMesh.QuadEntry quadEntry : quads) {
+                renderQuad(mesh, quadEntry, poseStack, consumer, cameraPos);
+            }
         }
     }
 

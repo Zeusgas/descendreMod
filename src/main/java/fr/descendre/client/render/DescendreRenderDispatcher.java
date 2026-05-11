@@ -2,6 +2,7 @@ package fr.descendre.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import fr.descendre.client.DescendreClientCubeCache;
+import fr.descendre.client.render.backend.DescendreRenderPass;
 import fr.descendre.world.cube.CubePos;
 import fr.descendre.world.cube.DescendreCube;
 import net.minecraft.client.Minecraft;
@@ -18,15 +19,17 @@ public final class DescendreRenderDispatcher {
 
     private DescendreRenderDispatcher() {}
 
-    public static void renderAll(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 cameraPos) {
+    public static void renderAll(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Vec3 cameraPos,
+            DescendreRenderPass pass
+    ) {
         DescendreClientCubeCache cache = DescendreClientCubeCache.get();
         if (cache.size() == 0) return;
 
         DescendreMeshCache.get().beginFrame(4);
 
-        // Distance de rendu temporaire côté client.
-        // 12 cubes = 192 blocs autour de la caméra.
-        // Plus tard on mettra ça dans la config.
         final int renderRadiusCubes = 12;
         final double maxDistSq = (renderRadiusCubes * 16.0) * (renderRadiusCubes * 16.0);
 
@@ -39,7 +42,6 @@ public final class DescendreRenderDispatcher {
             double worldOriginY = pos.y() << 4;
             double worldOriginZ = pos.z() << 4;
 
-            // Centre du cube pour le test de distance
             double centerX = worldOriginX + 8.0;
             double centerY = worldOriginY + 8.0;
             double centerZ = worldOriginZ + 8.0;
@@ -58,7 +60,13 @@ public final class DescendreRenderDispatcher {
                 continue;
             }
 
-            DescendreRenderBackend.renderer().render(mesh, poseStack, bufferSource, cameraPos);
+            DescendreRenderBackend.renderer().render(
+                    mesh,
+                    poseStack,
+                    bufferSource,
+                    cameraPos,
+                    pass
+            );
         }
     }
 }

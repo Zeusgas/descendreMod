@@ -6,10 +6,12 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.phys.Vec3;
 
 public interface DescendreMeshRenderer {
+
     void render(
-            DescendreCubeMesh cubeMesh,
+            DescendreCubeMesh mesh,
             PoseStack poseStack,
             MultiBufferSource bufferSource,
-            Vec3 cameraPos
+            Vec3 cameraPos,
+            DescendreRenderPass pass
     );
 }

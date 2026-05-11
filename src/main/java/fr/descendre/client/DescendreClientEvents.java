@@ -19,8 +19,11 @@ public final class DescendreClientEvents {
     private DescendreClientEvents() {}
 
     public static void register(IEventBus modBus) {
+        NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterOpaqueBlocks.class,
+                DescendreClientEvents::onRenderOpaque);
+
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterTranslucentBlocks.class,
-                DescendreClientEvents::onRender);
+                DescendreClientEvents::onRenderTranslucent);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.client.event.ClientTickEvent.Post.class,
                 DescendreClientEvents::onClientTick);
     }
@@ -30,7 +33,7 @@ public final class DescendreClientEvents {
         if (mc.level == null || mc.isPaused()) return;
         DescendreClientCubeCache.get().tickBlockEntities();
     }
-    private static void onRender(RenderLevelStageEvent.AfterTranslucentBlocks event) {
+    private static void onRenderOpaque(RenderLevelStageEvent.AfterOpaqueBlocks event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -39,13 +42,41 @@ public final class DescendreClientEvents {
 
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
-        DescendreRenderDispatcher.renderAll(event.getPoseStack(), bufferSource, cameraPos);
+        DescendreRenderDispatcher.renderAll(
+                event.getPoseStack(),
+                bufferSource,
+                cameraPos,
+                fr.descendre.client.render.backend.DescendreRenderPass.OPAQUE
+        );
+
+        bufferSource.endBatch();
+    }
+
+    private static void onRenderTranslucent(RenderLevelStageEvent.AfterTranslucentBlocks event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+
+        Camera camera = mc.gameRenderer.getMainCamera();
+        Vec3 cameraPos = camera.position();
+
+        MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
+
+        DescendreRenderDispatcher.renderAll(
+                event.getPoseStack(),
+                bufferSource,
+                cameraPos,
+                fr.descendre.client.render.backend.DescendreRenderPass.TRANSLUCENT
+        );
+
         bufferSource.endBatch();
 
-        // Rendu des fissures de cassage progressif (utilise un buffer source dédié)
         MultiBufferSource.BufferSource crumblingBuffer = mc.renderBuffers().crumblingBufferSource();
         fr.descendre.client.render.DescendreBreakProgress.get().render(
-                event.getPoseStack(), crumblingBuffer, cameraPos.x, cameraPos.y, cameraPos.z
+                event.getPoseStack(),
+                crumblingBuffer,
+                cameraPos.x,
+                cameraPos.y,
+                cameraPos.z
         );
         crumblingBuffer.endBatch();
     }
