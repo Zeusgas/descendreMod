@@ -19,6 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.world.level.BlockAndTintGetter;
 
 
 import java.util.ArrayList;
@@ -28,9 +30,11 @@ import java.util.Map;
 
 public final class DescendreCubeMesh {
 
-    public record QuadEntry(int lx, int ly, int lz, BakedQuad quad, int tintColor) {}
+    public record QuadEntry(int lx, int ly, int lz, BakedQuad quad, int tintColor, int packedLight) {}
 
-    public record FluidEntry(BlockPos worldPos, BlockState blockState, FluidState fluidState) {}
+    private record LightSource(int x, int y, int z, int light) {}
+
+    public record FluidEntry(BlockPos worldPos, BlockState blockState, FluidState fluidState, int packedLight) {}
 
     private final List<FluidEntry> fluids;
 
@@ -117,13 +121,19 @@ public final class DescendreCubeMesh {
         int worldOriginY = cubePos.y() << 4;
         int worldOriginZ = cubePos.z() << 4;
 
+        List<LightSource> lightSources = descendre$collectLightSources(
+                cache,
+                worldOriginX,
+                worldOriginY,
+                worldOriginZ
+        );
+
         RandomSource random = RandomSource.create();
 
         BlockPos.MutableBlockPos worldPos = new BlockPos.MutableBlockPos();
         BlockPos.MutableBlockPos neighborWorldPos = new BlockPos.MutableBlockPos();
 
         List<BlockModelPart> parts = new ArrayList<>();
-
         for (int ly = 0; ly < 16; ly++) {
             for (int lz = 0; lz < 16; lz++) {
                 for (int lx = 0; lx < 16; lx++) {
@@ -139,9 +149,16 @@ public final class DescendreCubeMesh {
 
                     worldPos.set(worldX, worldY, worldZ);
 
+                    int packedLight = descendre$getPackedLight(worldPos, lightSources);
+
                     FluidState fluidState = state.getFluidState();
                     if (fluidState != null && !fluidState.isEmpty()) {
-                        fluids.add(new FluidEntry(worldPos.immutable(), state, fluidState));
+                        fluids.add(new FluidEntry(
+                                worldPos.immutable(),
+                                state,
+                                fluidState,
+                                descendre$getPackedLight(tintGetter, worldPos)
+                        ));
                     }
 
                     BlockStateModel stateModel = dispatcher.getBlockModel(state);
@@ -165,15 +182,18 @@ public final class DescendreCubeMesh {
                             continue;
                         }
 
+
+
                         for (BlockModelPart part : parts) {
                             for (BakedQuad quad : part.getQuads(direction)) {
                                 bucket.add(new QuadEntry(
-                                    lx,
-                                    ly,
-                                    lz,
-                                    quad,
-                                    descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad)
-                            ));
+                                        lx,
+                                        ly,
+                                        lz,
+                                        quad,
+                                        descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad),
+                                        packedLight
+                                ));
                             }
                         }
                     }
@@ -185,7 +205,8 @@ public final class DescendreCubeMesh {
                                     ly,
                                     lz,
                                     quad,
-                                    descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad)
+                                    descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad),
+                                    packedLight
                             ));
                         }
                     }
@@ -220,6 +241,92 @@ public final class DescendreCubeMesh {
         return color;
     }
 
+
+    private static int descendre$getPackedLight(BlockAndTintGetter tintGetter, BlockPos pos) {
+        if (tintGetter == null) {
+            return 0;
+        }
+
+        return LevelRenderer.getLightColor(tintGetter, pos);
+    }
+
+    private static List<LightSource> descendre$collectLightSources(
+            DescendreClientCubeCache cache,
+            int originX,
+            int originY,
+            int originZ
+    ) {
+        List<LightSource> lights = new ArrayList<>();
+        BlockPos.MutableBlockPos scanPos = new BlockPos.MutableBlockPos();
+
+        int minX = originX - 15;
+        int minY = originY - 15;
+        int minZ = originZ - 15;
+
+        int maxX = originX + 30;
+        int maxY = originY + 30;
+        int maxZ = originZ + 30;
+
+        for (int y = minY; y <= maxY; y++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                for (int x = minX; x <= maxX; x++) {
+                    scanPos.set(x, y, z);
+
+                    BlockState state = cache.getBlock(scanPos);
+                    if (state == null || state.isAir()) {
+                        continue;
+                    }
+
+                    int light = descendre$getLightEmission(state);
+                    if (light > 0) {
+                        lights.add(new LightSource(x, y, z, light));
+                    }
+                }
+            }
+        }
+
+        return lights;
+    }
+
+    private static int descendre$getPackedLight(BlockPos pos, List<LightSource> lightSources) {
+        int blockLight = 0;
+
+        for (LightSource source : lightSources) {
+            int distance =
+                    Math.abs(source.x - pos.getX())
+                            + Math.abs(source.y - pos.getY())
+                            + Math.abs(source.z - pos.getZ());
+
+            if (distance > 15) {
+                continue;
+            }
+
+            int value = source.light - distance;
+            if (value > blockLight) {
+                blockLight = value;
+            }
+
+            if (blockLight >= 15) {
+                break;
+            }
+        }
+
+        // Petite lumière ambiante pour éviter un noir total temporairement.
+        blockLight = Math.max(1, Math.min(15, blockLight));
+
+        // Pas de skylight vanilla dans les cubes Descendre pour l’instant.
+        int skyLight = 0;
+
+        return descendre$packLight(blockLight, skyLight);
+    }
+
+    private static int descendre$getLightEmission(BlockState state) {
+        return Math.max(0, Math.min(15, state.getLightEmission()));
+    }
+
+    private static int descendre$packLight(int blockLight, int skyLight) {
+        return ((blockLight & 15) << 4) | ((skyLight & 15) << 20);
+    }
 
 
 

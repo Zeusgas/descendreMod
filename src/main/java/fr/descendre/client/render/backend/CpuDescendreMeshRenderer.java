@@ -26,8 +26,6 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
 
     public static final CpuDescendreMeshRenderer INSTANCE = new CpuDescendreMeshRenderer();
 
-    private static final int FULL_BRIGHT = 0x00F000F0;
-
     private CpuDescendreMeshRenderer() {}
 
     @Override
@@ -78,7 +76,7 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
                 green,
                 blue,
                 1.0F,
-                FULL_BRIGHT,
+                quadEntry.packedLight(),
                 OverlayTexture.NO_OVERLAY
         );
 
@@ -112,7 +110,13 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
                     : RenderTypes.solidMovingBlock();
 
             VertexConsumer rawConsumer = bufferSource.getBuffer(renderType);
-            VertexConsumer shiftedConsumer = new OffsetVertexConsumer(rawConsumer, offsetX, offsetY, offsetZ);
+            VertexConsumer shiftedConsumer = new OffsetVertexConsumer(
+                    rawConsumer,
+                    offsetX,
+                    offsetY,
+                    offsetZ,
+                    fluidEntry.packedLight()
+            );
 
             dispatcher.renderLiquid(
                     fluidEntry.worldPos(),
@@ -128,7 +132,8 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
             VertexConsumer delegate,
             float offsetX,
             float offsetY,
-            float offsetZ
+            float offsetZ,
+            int packedLight
     ) implements VertexConsumer {
 
         @Override
@@ -163,7 +168,13 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
 
         @Override
         public VertexConsumer setUv2(int u, int v) {
-            delegate.setUv2(u, v);
+            delegate.setLight(packedLight);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setLight(int uv) {
+            delegate.setLight(packedLight);
             return this;
         }
 

@@ -128,4 +128,20 @@ public final class DescendreMeshCache {
         this.maxBuildsPerFrame = Math.max(1, maxBuilds);
     }
 
+    public void invalidateLight(BlockPos pos) {
+        CubePos center = CubePos.fromBlockPos(pos);
+
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    dirty.add(new CubePos(
+                            center.x() + dx,
+                            center.y() + dy,
+                            center.z() + dz
+                    ));
+                }
+            }
+        }
+    }
+
 }

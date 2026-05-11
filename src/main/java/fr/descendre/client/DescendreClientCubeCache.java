@@ -186,6 +186,13 @@ public final class DescendreClientCubeCache {
         }
 
         fr.descendre.client.render.DescendreMeshCache.get().invalidateBlock(pos);
+
+        int oldLight = old == null ? 0 : old.getLightEmission();
+        int newLight = state == null ? 0 : state.getLightEmission();
+
+        if (oldLight != newLight) {
+            fr.descendre.client.render.DescendreMeshCache.get().invalidateLight(pos);
+        }
     }
 
     /** Reçu par le handler de ClientboundForgetCubePacket. */
