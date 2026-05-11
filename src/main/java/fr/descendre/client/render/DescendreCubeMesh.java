@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.material.FluidState;
 
 
 import java.util.ArrayList;
@@ -29,6 +30,10 @@ public final class DescendreCubeMesh {
 
     public record QuadEntry(int lx, int ly, int lz, BakedQuad quad, int tintColor) {}
 
+    public record FluidEntry(BlockPos worldPos, BlockState blockState, FluidState fluidState) {}
+
+    private final List<FluidEntry> fluids;
+
     private static final Direction[] DIRECTIONS = Direction.values();
 
     private final CubePos cubePos;
@@ -37,12 +42,21 @@ public final class DescendreCubeMesh {
     private final int originZ;
     private final Map<RenderType, List<QuadEntry>> quadsByType;
 
-    private DescendreCubeMesh(CubePos cubePos, Map<RenderType, List<QuadEntry>> quadsByType) {
+    private DescendreCubeMesh(
+            CubePos cubePos,
+            Map<RenderType, List<QuadEntry>> quadsByType,
+            List<FluidEntry> fluids
+    ) {
         this.cubePos = cubePos;
         this.originX = cubePos.x() << 4;
         this.originY = cubePos.y() << 4;
         this.originZ = cubePos.z() << 4;
         this.quadsByType = quadsByType;
+        this.fluids = fluids;
+    }
+
+    public List<FluidEntry> fluids() {
+        return fluids;
     }
 
     public CubePos cubePos() {
@@ -66,6 +80,10 @@ public final class DescendreCubeMesh {
     }
 
     public boolean isEmpty() {
+        if (!fluids.isEmpty()) {
+            return false;
+        }
+
         if (quadsByType.isEmpty()) {
             return true;
         }
@@ -83,8 +101,10 @@ public final class DescendreCubeMesh {
         CubePos cubePos = cube.pos();
         Map<RenderType, List<QuadEntry>> result = new HashMap<>();
 
+        List<FluidEntry> fluids = new ArrayList<>();
+
         if (cube.isEmpty()) {
-            return new DescendreCubeMesh(cubePos, result);
+            return new DescendreCubeMesh(cubePos, result, fluids);
         }
 
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
@@ -118,6 +138,11 @@ public final class DescendreCubeMesh {
                     int worldZ = worldOriginZ + lz;
 
                     worldPos.set(worldX, worldY, worldZ);
+
+                    FluidState fluidState = state.getFluidState();
+                    if (fluidState != null && !fluidState.isEmpty()) {
+                        fluids.add(new FluidEntry(worldPos.immutable(), state, fluidState));
+                    }
 
                     BlockStateModel stateModel = dispatcher.getBlockModel(state);
 
@@ -168,7 +193,7 @@ public final class DescendreCubeMesh {
             }
         }
 
-        return new DescendreCubeMesh(cubePos, result);
+        return new DescendreCubeMesh(cubePos, result, fluids);
     }
 
     private static int descendre$getTintColor(

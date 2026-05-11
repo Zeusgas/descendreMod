@@ -8,6 +8,14 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
 
+import fr.descendre.client.DescendreClientCubeCache;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+
+
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +51,11 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
             for (DescendreCubeMesh.QuadEntry quadEntry : quads) {
                 renderQuad(mesh, quadEntry, poseStack, consumer, cameraPos);
             }
+
         }
+
+        renderFluids(mesh, bufferSource, cameraPos);
+
     }
 
     private static void renderQuad(
@@ -79,4 +91,100 @@ public final class CpuDescendreMeshRenderer implements DescendreMeshRenderer {
 
         poseStack.popPose();
     }
+
+    private static void renderFluids(
+            DescendreCubeMesh mesh,
+            MultiBufferSource bufferSource,
+            Vec3 cameraPos
+    ) {
+        if (mesh.fluids().isEmpty()) {
+            return;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) {
+            return;
+        }
+
+        BlockRenderDispatcher dispatcher = minecraft.getBlockRenderer();
+        BlockAndTintGetter tintGetter = minecraft.level;
+
+        float offsetX = (float) (mesh.originX() - cameraPos.x);
+        float offsetY = (float) (mesh.originY() - cameraPos.y);
+        float offsetZ = (float) (mesh.originZ() - cameraPos.z);
+
+        for (DescendreCubeMesh.FluidEntry fluidEntry : mesh.fluids()) {
+            RenderType renderType = fluidEntry.fluidState().is(FluidTags.WATER)
+                    ? RenderTypes.translucentMovingBlock()
+                    : RenderTypes.solidMovingBlock();
+
+            VertexConsumer rawConsumer = bufferSource.getBuffer(renderType);
+            VertexConsumer shiftedConsumer = new OffsetVertexConsumer(rawConsumer, offsetX, offsetY, offsetZ);
+
+            dispatcher.renderLiquid(
+                    fluidEntry.worldPos(),
+                    tintGetter,
+                    shiftedConsumer,
+                    fluidEntry.blockState(),
+                    fluidEntry.fluidState()
+            );
+        }
+    }
+
+    private record OffsetVertexConsumer(
+            VertexConsumer delegate,
+            float offsetX,
+            float offsetY,
+            float offsetZ
+    ) implements VertexConsumer {
+
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z) {
+            delegate.addVertex(x + offsetX, y + offsetY, z + offsetZ);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+            delegate.setColor(red, green, blue, alpha);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int argb) {
+            delegate.setColor(argb);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v) {
+            delegate.setUv(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v) {
+            delegate.setUv1(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v) {
+            delegate.setUv2(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z) {
+            delegate.setNormal(x, y, z);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setLineWidth(float width) {
+            delegate.setLineWidth(width);
+            return this;
+        }
+    }
+
 }

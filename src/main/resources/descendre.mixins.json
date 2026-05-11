@@ -14,7 +14,8 @@
     "collision.ClientLevelDestroyProgressMixin",
     "collision.ServerLevelBlockEventMixin",
     "collision.ServerLevelScheduleTickMixin",
-    "collision.FallingBlockCubicTickMixin"
+    "collision.FallingBlockCubicTickMixin",
+    "collision.LevelGetFluidStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

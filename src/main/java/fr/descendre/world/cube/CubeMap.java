@@ -10,6 +10,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import fr.descendre.server.DescendreScheduledTicks;
 import net.minecraft.world.level.block.FallingBlock;
+import fr.descendre.server.DescendreScheduledTicks;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.material.FluidState;
 
 import java.util.function.BiConsumer;
 import java.util.HashMap;
@@ -176,6 +179,7 @@ public final class CubeMap {
         }
 
         if (triggerNeighborUpdates) {
+            descendre$scheduleFluidsAround(level, immutable, state);
             descendre$scheduleFallingBlocksAround(level, immutable, state);
         }
 
@@ -252,5 +256,38 @@ public final class CubeMap {
                 || state.isAir()
                 || state.getCollisionShape(level, pos).isEmpty();
     }
+
+    private void descendre$scheduleFluidsAround(ServerLevel level, BlockPos changedPos, BlockState newState) {
+        descendre$scheduleFluidIfPresent(level, changedPos, newState);
+
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = changedPos.relative(direction);
+            BlockState neighborState = getBlock(neighborPos);
+            descendre$scheduleFluidIfPresent(level, neighborPos, neighborState);
+        }
+    }
+
+    private void descendre$scheduleFluidIfPresent(ServerLevel level, BlockPos pos, BlockState state) {
+        if (state == null) {
+            return;
+        }
+
+        FluidState fluidState = state.getFluidState();
+        if (fluidState == null || fluidState.isEmpty()) {
+            return;
+        }
+
+        int delay = Math.max(1, fluidState.getType().getTickDelay(level));
+
+        DescendreScheduledTicks.get(level).schedule(
+                pos,
+                fluidState.getType(),
+                delay,
+                level.getGameTime()
+        );
+    }
+
+
+
 
 }
