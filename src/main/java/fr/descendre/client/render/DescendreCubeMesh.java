@@ -121,12 +121,15 @@ public final class DescendreCubeMesh {
         int worldOriginY = cubePos.y() << 4;
         int worldOriginZ = cubePos.z() << 4;
 
-        List<LightSource> lightSources = descendre$collectLightSources(
-                cache,
-                worldOriginX,
-                worldOriginY,
-                worldOriginZ
-        );
+        DescendreLightProbe lightProbe = new DescendreLightProbe(worldOriginX, worldOriginY, worldOriginZ);
+        lightProbe.compute(cache);
+
+        // DEBUG
+        int sample0 = lightProbe.getPackedLight(worldOriginX + 8, worldOriginY + 8, worldOriginZ + 8);
+        int sample1 = lightProbe.getPackedLight(worldOriginX + 8, worldOriginY + 15, worldOriginZ + 8);
+        int skyTop = (sample1 >> 20) & 0xF;
+        int skyMid = (sample0 >> 20) & 0xF;
+        System.out.println("[LIGHT-DEBUG] cube=" + cubePos + " skyMid=" + skyMid + " skyTop=" + skyTop);
 
         RandomSource random = RandomSource.create();
 
@@ -149,7 +152,7 @@ public final class DescendreCubeMesh {
 
                     worldPos.set(worldX, worldY, worldZ);
 
-                    int packedLight = descendre$getPackedLight(worldPos, lightSources);
+                    int packedLight = lightProbe.getPackedLight(worldX, worldY, worldZ);
 
                     FluidState fluidState = state.getFluidState();
                     if (fluidState != null && !fluidState.isEmpty()) {
@@ -182,7 +185,14 @@ public final class DescendreCubeMesh {
                             continue;
                         }
 
-
+                        // Pour chaque face, lit la lumière du VOISIN dans la direction de la face.
+                        // C'est ce que fait vanilla : la face up d'un tronc utilise la lumière du
+                        // bloc au-dessus (skylight 15) au lieu de l'intérieur opaque du tronc (0).
+                        int facePackedLight = lightProbe.getPackedLight(
+                                neighborWorldPos.getX(),
+                                neighborWorldPos.getY(),
+                                neighborWorldPos.getZ()
+                        );
 
                         for (BlockModelPart part : parts) {
                             for (BakedQuad quad : part.getQuads(direction)) {
@@ -192,7 +202,7 @@ public final class DescendreCubeMesh {
                                         lz,
                                         quad,
                                         descendre$getTintColor(blockColors, tintGetter, state, worldPos, quad),
-                                        packedLight
+                                        facePackedLight
                                 ));
                             }
                         }
