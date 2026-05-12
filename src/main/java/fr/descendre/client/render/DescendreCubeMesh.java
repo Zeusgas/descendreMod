@@ -188,10 +188,23 @@ public final class DescendreCubeMesh {
                         // Pour chaque face, lit la lumière du VOISIN dans la direction de la face.
                         // C'est ce que fait vanilla : la face up d'un tronc utilise la lumière du
                         // bloc au-dessus (skylight 15) au lieu de l'intérieur opaque du tronc (0).
-                        int facePackedLight = lightProbe.getPackedLight(
+                        // Pour la face, on prend le max entre la lumière du voisin et celle
+                        // du bloc lui-même. Ça lisse le rendu dans les trous : la face UP au fond
+                        // d'un trou n'est pas plus sombre que ses propres faces de côté.
+                        int neighborLight = lightProbe.getPackedLight(
                                 neighborWorldPos.getX(),
                                 neighborWorldPos.getY(),
                                 neighborWorldPos.getZ()
+                        );
+                        int selfLight = lightProbe.getPackedLight(worldX, worldY, worldZ);
+                        int facePackedLight = Math.max(
+                                (neighborLight >> 4) & 0xF,
+                                (selfLight >> 4) & 0xF
+                        ) << 4 | (
+                                Math.max(
+                                        (neighborLight >> 20) & 0xF,
+                                        (selfLight >> 20) & 0xF
+                                ) << 20
                         );
 
                         for (BlockModelPart part : parts) {

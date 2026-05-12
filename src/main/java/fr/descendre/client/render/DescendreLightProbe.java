@@ -135,7 +135,9 @@ public final class DescendreLightProbe {
         propagateBFS(skyLight, skyQueue);
 
         // === 4. Blocklight : depuis chaque émetteur ===
+        // Phase blocklight
         Deque<Integer> blockQueue = new ArrayDeque<>(1024);
+        int emittersFound = 0;
         for (int gy = 0; gy < GRID_SIZE; gy++) {
             for (int gz = 0; gz < GRID_SIZE; gz++) {
                 for (int gx = 0; gx < GRID_SIZE; gx++) {
@@ -150,9 +152,14 @@ public final class DescendreLightProbe {
                         int idx = gridIndex(gx, gy, gz);
                         blockLight[idx] = (byte) Math.min(15, emission);
                         blockQueue.push(idx);
+                        emittersFound++;
                     }
                 }
             }
+        }
+        if (emittersFound > 0) {
+            System.out.println("[BLOCKLIGHT] cube origin=(" + (gridOriginX+PADDING) + ","
+                    + (gridOriginY+PADDING) + "," + (gridOriginZ+PADDING) + ") emitters=" + emittersFound);
         }
         propagateBFS(blockLight, blockQueue);
     }
