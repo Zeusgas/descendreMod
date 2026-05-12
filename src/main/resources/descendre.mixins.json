@@ -15,7 +15,8 @@
     "collision.ServerLevelBlockEventMixin",
     "collision.ServerLevelScheduleTickMixin",
     "collision.FallingBlockCubicTickMixin",
-    "collision.LevelGetFluidStateMixin"
+    "collision.LevelGetFluidStateMixin",
+    "height.DimensionTypeHeightMixin"
   ],
   "injectors": {
     "defaultRequire": 1

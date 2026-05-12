@@ -1,8 +1,8 @@
 package fr.descendre.server;
 
+import fr.descendre.cubic.DescendreServerConfig;
 import fr.descendre.network.ClientboundCubeDataPacket;
 import fr.descendre.network.ClientboundForgetCubePacket;
-import fr.descendre.network.DescendreNetwork;
 import fr.descendre.world.cube.CubePos;
 import fr.descendre.world.cube.DescendreCube;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,8 +40,12 @@ public final class DescendrePlayerTracker {
                             java.util.function.Function<CubePos, DescendreCube> cubeProvider) {
         Set<CubePos> tracked = TRACKED.computeIfAbsent(player.getUUID(), uuid -> new HashSet<>());
 
-        // 1. Envoyer les nouveaux cubes
+        // 1. Envoyer les nouveaux cubes, avec budget réseau/rendu.
+        // Les positions restantes restent non-trackées et seront envoyées aux prochains ticks.
+        int syncBudget = DescendreServerConfig.maxSyncPacketsPerPlayer();
+        int synced = 0;
         for (CubePos pos : desired) {
+            if (synced >= syncBudget) break;
             if (tracked.contains(pos)) continue;
             DescendreCube cube = cubeProvider.apply(pos);
             if (cube == null || cube.isEmpty()) {
@@ -50,11 +54,11 @@ public final class DescendrePlayerTracker {
                 continue;
             }
             PacketDistributor.sendToPlayer(player, ClientboundCubeDataPacket.fromCube(cube));
-
             tracked.add(pos);
+            synced++;
         }
 
-        // 2. Envoyer les forgets pour les cubes qui ne sont plus voulus
+        // 2. Envoyer les forgets pour les cubes qui ne sont plus voulus.
         Set<CubePos> toForget = new HashSet<>();
         for (CubePos pos : tracked) {
             if (!desired.contains(pos)) {

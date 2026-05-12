@@ -1,7 +1,3 @@
-/descendre cubic platform 0 100 0 5 stone
-/execute in descendre:void run tp 0 -1100 0
-/execute in descendre:void run tp 0 -11000 0
-/descendre cubic platform 0 -11000 0 5 stone
 /execute in descendre:void run tp 0 100 0
 /execute in descendre:void run tp 0 -11000 0
 /descendre cubic platform 0 -11000 0 5 door
@@ -48,3 +44,7 @@
 /descendre cubic tp 0 -10000 0
 /execute in descendre:void run tp @s 0 -10000 0
 /descendre cubic platform 0 -9997 0 10 cobblestone
+/execute in descendre:void run tp @s 300 10 0
+/execute in descendre:void run tp @s 30 10 0
+/gamemode spectator
+/execute in descendre:void run tp @s 3000 15 1000

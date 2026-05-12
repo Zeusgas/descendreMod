@@ -5,13 +5,11 @@ import fr.descendre.storage.CubeStorage;
 import fr.descendre.world.cube.CubeMap;
 import fr.descendre.world.cube.CubePos;
 import fr.descendre.world.cube.DescendreCube;
+import fr.descendre.worldgen.DescendreWorldGenerator;
 import net.minecraft.server.level.ServerLevel;
-import fr.descendre.server.DescendrePlayerTracker;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -50,27 +48,39 @@ public final class DescendreCubeTicker {
         CubeMap map = entry.map();
         CubeStorage storage = entry.storage();
 
-        // Pas de joueur connecté à cette dimension : rien à faire (on garde la RAM telle quelle)
+        // Pas de joueur connecté à cette dimension : rien à faire.
         if (level.players().isEmpty()) return;
 
         Set<CubePos> desired   = DescendreCubeTicketManager.computeDesired(level);
         Set<CubePos> keepAlive = DescendreCubeTicketManager.computeKeepAlive(level);
 
-        // ---------- 1. Chargement RAM (depuis disque si nécessaire) ----------
+        // ---------- 1. Chargement RAM / génération ----------
         int loadBudget = DescendreServerConfig.maxLoadsPerTick();
-        int loaded = 0;
+        int attempts = 0;
 
         for (CubePos pos : desired) {
-            if (loaded >= loadBudget) break;
+            if (attempts >= loadBudget) break;
             if (map.getCube(pos) != null) continue;
+
+            attempts++;
+
             DescendreCube cube = storage.getCubeOrLoad(pos);
+
+            if (cube == null
+                    && DescendreWorldGenerator.isEnabledFor(level)
+                    && DescendreWorldGenerator.mayContainGeneratedBlocks(pos)) {
+                cube = DescendreWorldGenerator.generateCube(pos);
+                if (cube != null) {
+                    map.putCube(cube);
+                }
+            }
+
             if (cube != null) {
                 cube.attachLevel(level);
-                loaded++;
             }
         }
 
-        // ---------- 2. Synchronisation réseau pour chaque joueur ----------
+        // ---------- 2. Synchronisation réseau ----------
         for (ServerPlayer player : level.players()) {
             Set<CubePos> playerDesired = DescendreCubeTicketManager.computeDesiredForPlayer(player);
             DescendrePlayerTracker.sync(player, playerDesired, map::getCube);
@@ -95,6 +105,5 @@ public final class DescendreCubeTicker {
             map.removeCube(cube.pos());
             unloaded++;
         }
-
     }
 }

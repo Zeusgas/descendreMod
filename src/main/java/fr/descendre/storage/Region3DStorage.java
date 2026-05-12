@@ -55,7 +55,7 @@ public final class Region3DStorage {
         file = new Region3DFile(pathFor(key));
         openFiles.put(key, file);
 
-        // Évict si on dépasse la limite
+        // Évict si on dépasse la limite.
         while (openFiles.size() > MAX_OPEN_FILES) {
             Map.Entry<RegionKey, Region3DFile> oldest = openFiles.entrySet().iterator().next();
             try {
@@ -69,6 +69,12 @@ public final class Region3DStorage {
 
     /** Lit le NBT d'un cube. Retourne null s'il n'existe pas. */
     public synchronized CompoundTag readCube(CubePos pos) throws IOException {
+        // Ne crée pas de fichier région vide juste parce qu'on vérifie un cube absent.
+        // Important pour la génération procédurale : beaucoup de cubes d'air
+        // sont testés autour des joueurs, mais ils ne doivent pas polluer le disque.
+        Path path = pathFor(regionOf(pos));
+        if (!java.nio.file.Files.exists(path)) return null;
+
         Region3DFile file = getOrOpen(pos);
         return file.readCube(pos.x(), pos.y(), pos.z());
     }

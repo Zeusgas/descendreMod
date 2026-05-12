@@ -6,24 +6,12 @@ import fr.descendre.world.cube.DescendreCube;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
-/**
- * Cache global des meshes des cubes côté client.
- *
- * - getOrBuild : retourne le mesh d'un cube. Le construit si pas encore fait
- *   ou si invalidé.
- * - invalidate : marque un cube (et ses voisins, car le culling change !) comme
- *   à reconstruire au prochain rendu.
- * - forget : oublie complètement un cube (cube déchargé).
- */
 public final class DescendreMeshCache {
-
-    private int buildsThisFrame = 0;
-    private int maxBuildsPerFrame = 4;
 
     private static final DescendreMeshCache INSTANCE = new DescendreMeshCache();
 
@@ -31,27 +19,50 @@ public final class DescendreMeshCache {
         return INSTANCE;
     }
 
-    /** Map des meshes calculés. Si une entrée n'existe pas, le mesh sera construit à la demande. */
     private final Map<CubePos, DescendreCubeMesh> meshes = new ConcurrentHashMap<>();
-
-    /**
-     * Set des cubes à reconstruire (mesh sale ou inexistant).
-     * On utilise un set pour dédupliquer : si on invalide 50× le même cube avant le prochain render,
-     * on ne le construit qu'une fois.
-     */
     private final Set<CubePos> dirty = ConcurrentHashMap.newKeySet();
+    private final Set<CubePos> building = ConcurrentHashMap.newKeySet();
+    private final Queue<CompletedBuild> completedQueue = new ConcurrentLinkedQueue<>();
+
+    private final ExecutorService workers = Executors.newFixedThreadPool(
+            Math.max(2, Runtime.getRuntime().availableProcessors() / 2),
+            r -> {
+                Thread t = new Thread(r, "DescendreMeshWorker");
+                t.setDaemon(true);
+                t.setPriority(Thread.NORM_PRIORITY - 1);
+                return t;
+            }
+    );
+
+    private int submitsThisFrame = 0;
+    private int maxSubmitsPerFrame = 4;
+
+    private record CompletedBuild(CubePos pos, DescendreCubeMesh mesh) {}
 
     private DescendreMeshCache() {}
 
-    /**
-     * Récupère (ou construit) le mesh d'un cube.
-     * Retourne null si le cube n'existe pas dans le cache client.
-     */
-    public DescendreCubeMesh getOrBuild(CubePos pos, DescendreClientCubeCache cubeCache) {
-        DescendreCubeMesh mesh = meshes.get(pos);
-        if (mesh != null && !dirty.contains(pos)) {
-            return mesh;
+    public void beginFrame(int maxSubmits) {
+        this.submitsThisFrame = 0;
+        this.maxSubmitsPerFrame = Math.max(1, maxSubmits);
+
+        CompletedBuild completed;
+        while ((completed = completedQueue.poll()) != null) {
+            if (completed.mesh != null) {
+                meshes.put(completed.pos, completed.mesh);
+            } else {
+                meshes.remove(completed.pos);
+            }
+            building.remove(completed.pos);
+            dirty.remove(completed.pos);
         }
+    }
+
+    public DescendreCubeMesh getOrBuild(CubePos pos, DescendreClientCubeCache cubeCache) {
+        DescendreCubeMesh cached = meshes.get(pos);
+        boolean isDirty = dirty.contains(pos);
+
+        if (cached != null && !isDirty) return cached;
+        if (building.contains(pos)) return cached;
 
         DescendreCube cube = cubeCache.getCube(pos);
         if (cube == null) {
@@ -60,41 +71,35 @@ public final class DescendreMeshCache {
             return null;
         }
 
-        // Si on a déjà atteint le budget de build pour cette frame,
-// on garde l'ancien mesh s'il existe. Sinon on ne rend rien pour l'instant.
-        if (buildsThisFrame >= maxBuildsPerFrame) {
-            return mesh;
-        }
+        if (submitsThisFrame >= maxSubmitsPerFrame) return cached;
 
-        buildsThisFrame++;
+        submitsThisFrame++;
+        building.add(pos);
 
-        DescendreCubeMesh built = DescendreCubeMesh.build(cube, cubeCache);
-        meshes.put(pos, built);
-        dirty.remove(pos);
-        return built;
+        workers.submit(() -> {
+            try {
+                DescendreCubeMesh built = DescendreCubeMesh.build(cube, cubeCache);
+                completedQueue.offer(new CompletedBuild(pos, built));
+            } catch (Exception e) {
+                System.err.println("[Descendre] Mesh build error @ " + pos + ": " + e.getMessage());
+                completedQueue.offer(new CompletedBuild(pos, null));
+            }
+        });
+
+        return cached;
     }
 
-    /**
-     * Marque un cube comme à reconstruire au prochain rendu.
-     * Marque aussi ses 6 voisins (parce que le culling de leurs faces partagées peut changer).
-     */
     public void invalidate(CubePos pos) {
         dirty.add(pos);
         for (Direction dir : Direction.values()) {
-            CubePos neighbor = new CubePos(
+            dirty.add(new CubePos(
                     pos.x() + dir.getStepX(),
                     pos.y() + dir.getStepY(),
                     pos.z() + dir.getStepZ()
-            );
-            dirty.add(neighbor);
+            ));
         }
     }
 
-    /**
-     * Invalidation ciblée par bloc. Utilisé quand un seul bloc change.
-     * On invalide le cube qui contient ce bloc, et seulement les voisins de cube
-     * correspondant aux faces du bloc qui touchent un bord (pas tous les 6).
-     */
     public void invalidateBlock(BlockPos pos) {
         CubePos cubePos = CubePos.fromBlockPos(pos);
         dirty.add(cubePos);
@@ -111,26 +116,20 @@ public final class DescendreMeshCache {
         if (lz == 15) dirty.add(new CubePos(cubePos.x(), cubePos.y(), cubePos.z() + 1));
     }
 
-    /** Oublie complètement un cube (déchargement par le ticker côté serveur). */
     public void forget(CubePos pos) {
         meshes.remove(pos);
         dirty.remove(pos);
     }
 
-    /** Vide tout (déconnexion). */
     public void clear() {
         meshes.clear();
         dirty.clear();
-    }
-
-    public void beginFrame(int maxBuilds) {
-        this.buildsThisFrame = 0;
-        this.maxBuildsPerFrame = Math.max(1, maxBuilds);
+        building.clear();
+        completedQueue.clear();
     }
 
     public void invalidateLight(BlockPos pos) {
         CubePos center = CubePos.fromBlockPos(pos);
-
         for (int dy = -1; dy <= 1; dy++) {
             for (int dz = -1; dz <= 1; dz++) {
                 for (int dx = -1; dx <= 1; dx++) {
@@ -144,4 +143,7 @@ public final class DescendreMeshCache {
         }
     }
 
+    public String stats() {
+        return "meshes=" + meshes.size() + " dirty=" + dirty.size() + " building=" + building.size();
+    }
 }
