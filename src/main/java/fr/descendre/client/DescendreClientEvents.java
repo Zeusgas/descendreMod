@@ -10,6 +10,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import fr.descendre.client.render.DescendreBreakProgress;
 import fr.descendre.client.DescendreClientCubeCache;
+import fr.descendre.client.render.DescendreSkyboxArbre;
 
 /**
  * Hook côté client : appelé à chaque frame après le rendu des blocs translucides.
@@ -47,6 +48,13 @@ public final class DescendreClientEvents {
                 bufferSource,
                 cameraPos,
                 fr.descendre.client.render.backend.DescendreRenderPass.OPAQUE
+        );
+
+        // Skybox arbre lointain — AVANT endBatch pour que les buffers soient encore "building"
+        fr.descendre.client.render.DescendreSkyboxArbre.get().render(
+                event.getPoseStack(),
+                bufferSource,
+                cameraPos
         );
 
         bufferSource.endBatch();

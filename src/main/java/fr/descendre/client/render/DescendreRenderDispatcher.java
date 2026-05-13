@@ -16,12 +16,14 @@ public final class DescendreRenderDispatcher {
     public static final int RENDER_RADIUS_CUBES = 8;
     public static final int MAX_BUILDS_PER_FRAME = 4;
 
-    /**
-     * Demi-angle de vue effectif. ~80° par défaut = cos(40°) ≈ 0.77.
-     * On garde une marge : on garde tout ce qui est entre 90° et 100° de l'axe caméra
-     * (cos < 0) plus une bulle proche pour éviter le pop-out des cubes adjacents.
-     */
+    /** Flush le buffer tous les N cubes pour éviter l'overflow (limite ~16M vertices). */
+    private static final int FLUSH_EVERY = 8;
+
     private static final double NEAR_BUBBLE_DIST_SQ = 24.0 * 24.0;
+
+    /** Si on est haut dans la couronne (Y > 2500), rayon réduit pour éviter d'over-render. */
+    private static final double LEAF_ZONE_Y = 2500.0;
+    private static final double LEAF_ZONE_RADIUS_SQ = 64.0 * 64.0;
 
     private DescendreRenderDispatcher() {}
 
@@ -39,7 +41,6 @@ public final class DescendreRenderDispatcher {
             meshCache.beginFrame(MAX_BUILDS_PER_FRAME);
         }
 
-        // Vecteur de vue caméra (forward) pour le test "devant ou derrière"
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         org.joml.Vector3fc forwards = camera.forwardVector();
         double lookX = forwards.x();
@@ -48,10 +49,18 @@ public final class DescendreRenderDispatcher {
 
         final double maxDistSq = (RENDER_RADIUS_CUBES * 16.0) * (RENDER_RADIUS_CUBES * 16.0);
 
+        int cubesRenderedThisFrame = 0;
+
         for (DescendreCube cube : cache.allCubes()) {
             if (cube.isEmpty()) continue;
 
             CubePos pos = cube.pos();
+
+            // Optim : caméra en surface → pas de souterrain profond (Y < -32)
+            if (cameraPos.y > -5 && pos.y() < -2) continue;
+
+            // Optim inverse : caméra profonde → pas de surface lointaine
+            if (cameraPos.y < -100 && Math.abs(pos.y() - (int)(cameraPos.y / 16)) > 5) continue;
 
             double worldOriginX = pos.x() << 4;
             double worldOriginY = pos.y() << 4;
@@ -66,10 +75,16 @@ public final class DescendreRenderDispatcher {
             double dz = centerZ - cameraPos.z;
 
             double distSq = dx * dx + dy * dy + dz * dz;
-            if (distSq > maxDistSq) continue;
 
-            // Direction culling : skip si cube derrière la caméra
-            // sauf s'il est très proche (bulle pour éviter pop-out)
+            // Optim "dans la couronne" : si on est très haut, on réduit le rayon de rendu
+            // (les feuilles forment un volume dense et opaque, on ne voit pas loin)
+            if (cameraPos.y > LEAF_ZONE_Y) {
+                if (distSq > LEAF_ZONE_RADIUS_SQ) continue;
+            } else {
+                if (distSq > maxDistSq) continue;
+            }
+
+            // Direction culling : skip si cube derrière la caméra (sauf bulle proche)
             if (distSq > NEAR_BUBBLE_DIST_SQ) {
                 double dot = dx * lookX + dy * lookY + dz * lookZ;
                 if (dot < 0) continue;
@@ -79,6 +94,13 @@ public final class DescendreRenderDispatcher {
             if (mesh == null || mesh.isEmpty()) continue;
 
             DescendreRenderBackend.renderer().render(mesh, poseStack, bufferSource, cameraPos, pass);
+
+            cubesRenderedThisFrame++;
+            // Flush périodique pour éviter le buffer overflow
+            if (cubesRenderedThisFrame % FLUSH_EVERY == 0
+                    && bufferSource instanceof MultiBufferSource.BufferSource bs) {
+                bs.endBatch();
+            }
         }
     }
 }

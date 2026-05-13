@@ -1,0 +1,44 @@
+#Paramètres du système de tickets cubic Descendre.
+[ticket_system]
+	#Rayon horizontal de chargement autour du joueur, en cubes (1 cube = 16 blocs).
+	#Tous les cubes dans un cylindre de ce rayon seront considérés, mais Descendre filtre ensuite les cubes vides.
+	#8 = 128 blocs, bon compromis pour éviter de saturer le rendu.
+	# Default: 8
+	# Range: 1 ~ 64
+	load_radius_cubes = 8
+	#Rayon au-delà duquel on décharge les cubes. Doit être >= load_radius_cubes.
+	#Avoir une petite marge évite les cycles load/unload quand le joueur fait du va-et-vient.
+	# Default: 10
+	# Range: 1 ~ 96
+	unload_radius_cubes = 10
+	#Rayon vertical théorique de chargement, en cubes.
+	#Ancienne valeur trop lourde : 32 chargeait 512 blocs au-dessus/dessous du joueur.
+	#6 = 96 blocs verticaux maximum autour du joueur.
+	# Default: 6
+	# Range: 1 ~ 128
+	vertical_radius_cubes = 6
+	#Rayon vertical réellement scanné autour du joueur dans Descendre, en cubes.
+	#Le monde peut faire 5000 blocs de haut, mais on ne doit pas tout charger autour du joueur.
+	#4 = 64 blocs au-dessus/dessous, 6 = 96 blocs, 10 = 160 blocs.
+	# Default: 4
+	# Range: 1 ~ 32
+	near_vertical_radius_cubes = 4
+	#Fréquence du ticker, en ticks Minecraft (20 ticks = 1 seconde).
+	#2 = réactif sans charger une énorme zone d'un coup.
+	# Default: 2
+	# Range: 1 ~ 200
+	tick_interval = 2
+	#Limite de cubes essayés/chargés par appel du ticker.
+	#Ce budget limite aussi les tentatives sur des cubes procéduraux finalement vides.
+	# Default: 32
+	# Range: 1 ~ 4096
+	max_loads_per_tick = 32
+	#Limite de cubes déchargés (sauvegarde + retrait RAM) par appel du ticker.
+	# Default: 64
+	# Range: 1 ~ 4096
+	max_unloads_per_tick = 64
+	#Nombre maximum de cubes envoyés au client par joueur et par appel du ticker.
+	#Évite de saturer le réseau et le renderer quand une grosse zone apparaît d'un coup.
+	# Default: 48
+	# Range: 1 ~ 1024
+	max_sync_packets_per_player = 48
